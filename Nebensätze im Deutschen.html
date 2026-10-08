@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nebensätze im Deutschen</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;600&family=Literata:ital,wght@0,400;0,600;1,400&display=swap">
+<style>
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px);--bg:#eef2f3;--panel:#fff;--ink:#12262e;--mut:#506269;--line:#cfdadd;--ac:#0b5563;--acx:#fff;--s:#2f5bd0;--a:#1f8a5b;--d:#c5560a;--f:#8a3fc0;--mk:#ffe9a3}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0f1a1e;--panel:#17262c;--ink:#e6eef0;--mut:#9fb2b8;--line:#2b3f46;--ac:#7fd0e0;--acx:#08222a;--s:#8ea9ff;--a:#6fd6a3;--d:#ffa566;--f:#d2a2f2;--mk:#5a4a10}}
+:root[data-theme="dark"]{--bg:#0f1a1e;--panel:#17262c;--ink:#e6eef0;--mut:#9fb2b8;--line:#2b3f46;--ac:#7fd0e0;--acx:#08222a;--s:#8ea9ff;--a:#6fd6a3;--d:#ffa566;--f:#d2a2f2;--mk:#5a4a10}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:17px/1.6 Literata,Georgia,serif}
+.w{max-width:860px;margin:0 auto;padding:18px 16px 40px}
+h1{font:600 clamp(26px,5vw,38px)/1.1 Archivo,system-ui,sans-serif;margin:0 0 6px;letter-spacing:-.01em}
+.sub{color:var(--mut);margin:0 0 16px;max-width:60ch}
+nav{display:flex;gap:6px;overflow-x:auto;border-bottom:1px solid var(--line);margin-bottom:18px}
+nav button{font:600 15px Archivo,system-ui,sans-serif;background:none;border:0;border-bottom:3px solid transparent;color:var(--mut);padding:10px 12px;cursor:pointer;white-space:nowrap}
+nav button[aria-selected=true]{color:var(--ink);border-color:var(--ac)}
+button:focus-visible,textarea:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--ac);outline-offset:2px}
+[hidden]{display:none!important}
+textarea,input[type=search]{width:100%;font:inherit;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:10px 12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+.btn{font:600 15px Archivo,system-ui,sans-serif;background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:8px;padding:8px 14px;cursor:pointer}
+.btn.p{background:var(--ac);color:var(--acx);border-color:var(--ac)}
+.btn.sm{font-weight:400;font-size:14px;padding:4px 10px}
+.sent{display:flex;flex-wrap:wrap;gap:4px 14px;margin:22px 0 10px;font-size:20px}
+.cl{display:inline-flex;flex-direction:column;max-width:100%}
+.br{height:10px;border:3px solid var(--c);border-top:0;border-radius:0 0 8px 8px;margin-top:4px}
+.lb{font:600 13px Archivo,system-ui,sans-serif;color:var(--c);text-align:center}
+.tx b,mark{background:var(--mk);color:inherit;font-weight:inherit;padding:0 2px;border-radius:3px}
+.det{background:var(--panel);border:1px solid var(--line);border-left:6px solid var(--c);border-radius:8px;padding:12px 16px;margin:12px 0}
+.det h3{font:600 18px Archivo,system-ui,sans-serif;margin:0 0 4px;color:var(--c)}
+.det p{margin:4px 0}.fm,.mut{color:var(--mut);font-size:15px}
+.det ul{margin:6px 0 0;padding-left:20px}.det li{margin:5px 0}
+.warn{color:var(--d);font-size:15px}
+.cards details{background:var(--panel);border:1px solid var(--line);border-left:6px solid var(--c);border-radius:8px;margin:10px 0;padding:10px 16px}
+.cards summary{cursor:pointer;font:600 18px Archivo,system-ui,sans-serif;color:var(--c)}
+.cards summary small{display:block;font:400 15px Literata,serif;color:var(--mut)}
+.cards h4{font:600 14px Archivo,system-ui,sans-serif;margin:12px 0 2px;color:var(--mut)}
+.cards p,.cards ul{margin:2px 0}.cards ul{padding-left:20px}
+.flash{animation:fl 1.4s}@keyframes fl{from{background:var(--mk)}}
+@media(prefers-reduced-motion:reduce){.flash{animation:none}}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0}
+table{width:100%;border-collapse:collapse;background:var(--panel)}
+td,th{border:1px solid var(--line);padding:8px 12px;text-align:left;vertical-align:top}
+th{font-family:Archivo,system-ui,sans-serif}
+.note{color:var(--mut);font-size:15px;margin-top:20px}
+</style>
+</head>
+<body>
+<div class="w">
+<h1>Nebensätze im Deutschen</h1>
+<p class="sub">Tippe einen Satz ein und finde heraus, welche Nebensatzart darin steckt. Oder schlage alle Arten mit Fragen, Einleitewörtern und Erkennungsmerkmalen nach.</p>
+<nav role="tablist">
+<button role="tab" data-t="tool" aria-selected="true">Satz bestimmen</button>
+<button role="tab" data-t="types" aria-selected="false">Alle Nebensätze</button>
+<button role="tab" data-t="quiz" aria-selected="false">Fragetest</button>
+</nav>
+
+<section id="p-tool">
+<label for="inp" class="mut">Nebensatz oder ganzer Satz</label>
+<textarea id="inp" rows="3">Ich bleibe zu Hause, weil ich krank bin.</textarea>
+<div class="row"><button class="btn p" id="go">Bestimmen</button><button class="btn" id="clr">Leeren</button></div>
+<div class="chips" id="ex"></div>
+<div id="out" aria-live="polite"></div>
+<p class="note">Der Bestimmer arbeitet mit Wortlisten und Regeln, nicht mit einer echten Grammatikanalyse. Bei Wörtern wie wenn, als, dass, was oder wie entscheidet am Ende der Sinn. Prüfe dann mit dem Fragetest.</p>
+</section>
+
+<section id="p-types" hidden>
+<input type="search" id="q" placeholder="Suchen, z. B. weil, Bedingung, Infinitiv" aria-label="Suchen">
+<div class="row" id="gf"></div>
+<div class="cards" id="list"></div>
+</section>
+
+<section id="p-quiz" hidden>
+<p>So gehst du vor: 1. Finde den Nebensatz. Das gebeugte Verb steht meist am Ende, er beginnt mit einem Einleitewort und hängt per Komma am Hauptsatz. 2. Bestimme das Einleitewort. 3. Stelle die passende Frage.</p>
+<table id="qt"><tr><th>Frage</th><th>Nebensatzart</th></tr></table>
+<p class="note">Nach der Form unterscheidet man außerdem Konjunktionalsätze (weil, dass …), Relativsätze, indirekte Fragesätze, Infinitiv- und Partizipialsätze sowie uneingeleitete Nebensätze. ‚denn‘, ‚deshalb‘ und ‚trotzdem‘ leiten keine Nebensätze ein, danach steht das Verb an zweiter Stelle.</p>
+</section>
+</div>
+
+<script>
+const G={s:['Satzgliedsätze','--s'],a:['Attributsätze','--a'],d:['Adverbialsätze','--d'],f:['Besondere Formen','--f']};
+const T={},ORDER=[];
+`subjekt|s|Subjektsatz|Wer oder was …?|Ersetzt das Subjekt, durch ‚es‘ ersetzbar (Es freut mich).|dass, ob, wer, was, wie|[[Dass du kommst]], freut mich.~[[Wer zuletzt lacht]], lacht am besten.
+objekt|s|Objektsatz|Wen oder was …? Wem …?|Ersetzt ein Objekt, ersetzbar durch ‚es‘ oder ‚das‘. Oft nach sagen, wissen, glauben, hoffen.|dass, ob, Fragewort; auch uneingeleitet|Ich weiß, [[dass er kommt]].~Er sagt, [[er sei krank]].
+praepobj|s|Präpositionalobjektsatz|Worauf? Woran? Wovon? …|Im Hauptsatz steht ein Korrelat (darauf, daran, davon …), das Verb hat eine feste Präposition.|dass, ob, Fragewort|Ich warte darauf, [[dass du anrufst]].
+praedikativ|s|Prädikativsatz|Was ist das Problem, der Fall?|Ergänzt sein, werden, bleiben. Der Hauptsatz wirkt ohne ihn unvollständig.|dass, was, wie, wer|Das Problem ist, [[dass er nie pünktlich ist]].
+relativ|a|Relativsatz|Was für ein …? Welcher …?|Bezieht sich auf ein Nomen davor. Relativpronomen (auch mit Präposition) oder wo, womit. Verb am Ende.|der, die, das, dem, den, dessen, deren, welcher, was, wo|Das Buch, [[das ich lese]], ist spannend.~Die Frau, [[mit der ich sprach]], ist Ärztin.
+inhalt|a|Inhaltssatz|Welche Hoffnung, Tatsache …?|Erklärt ein abstraktes Nomen (Tatsache, Hoffnung, Frage, Gerücht).|dass, ob|Die Hoffnung, [[dass alles gut wird]], bleibt.
+temporal|d|Temporalsatz|Wann? Seit wann? Wie lange? Wie oft?|Zeitangabe. Gleichzeitig: während, als, solange. Vorzeitig: nachdem, sobald, seit. Nachzeitig: bevor, ehe, bis. ‚als‘ = einmalig in der Vergangenheit, ‚wenn‘ = wiederholt, Gegenwart, Zukunft.|als, wenn, während, solange, sooft, nachdem, sobald, seit(dem), bevor, ehe, bis|[[Als ich ankam]], regnete es.~[[Nachdem er gegessen hatte]], ging er.
+kausal|d|Kausalsatz (Begründungssatz)|Warum? Weshalb? Wieso?|Nennt den Grund. ‚denn‘ leitet keinen Nebensatz ein, danach steht das Verb an 2. Stelle.|weil, da, zumal, nun da|Ich bleibe zu Hause, [[weil ich krank bin]].
+konditional|d|Konditionalsatz (Bedingungssatz)|Unter welcher Bedingung? In welchem Fall?|Bedingung, im Hauptsatz oft ‚dann‘. Real: Indikativ. Irreal: Konjunktiv II. Uneingeleitet mit dem Verb an 1. Stelle.|wenn, falls, sofern, angenommen (dass), vorausgesetzt (dass)|[[Wenn du willst]], helfe ich.~[[Hätte ich Zeit]], käme ich mit.
+konzessiv|d|Konzessivsatz (Einräumungssatz)|Trotz welchen Umstands?|Einräumung, es passiert trotzdem. Im Hauptsatz passt ‚trotzdem‘ oder ‚dennoch‘.|obwohl, obgleich, obschon, wenngleich, auch wenn, selbst wenn|Er arbeitet, [[obwohl er krank ist]].
+konsekutiv|d|Konsekutivsatz (Folgesatz)|Mit welcher Folge?|Nennt die Folge. Im Hauptsatz steht oft so, derart, dermaßen, solch- oder zu … (als dass).|sodass, so … dass, derart … dass, zu … als dass|Es war so kalt, [[dass der See zufror]].
+final|d|Finalsatz (Zwecksatz)|Wozu? Mit welcher Absicht?|Nennt den Zweck. Verschiedene Subjekte: damit. Gleiches Subjekt: um … zu.|damit, um … zu|Ich lerne, [[damit ich bestehe]].~Ich lerne, [[um zu bestehen]].
+modal|d|Modalsatz|Wie? Auf welche Weise?|Art und Weise. Untertypen sind Instrumental-, Begleitumstands- und Substitutivsatz.|wie, indem, ohne dass, (an)statt dass|Er sprach, [[wie man es ihm beigebracht hatte]].
+instrumental|d|Instrumentalsatz|Wodurch? Womit?|Mittel oder Methode, meist mit gleichem Subjekt.|indem, dadurch dass|Er spart, [[indem er Rad fährt]].
+begleitumstand|d|Begleitumstandssatz|Wie? Ohne welchen Umstand?|Etwas geschieht ohne den genannten Umstand.|ohne dass, ohne … zu|Er ging, [[ohne dass es jemand merkte]].
+substitutiv|d|Substitutivsatz (Ersatzsatz)|Anstelle wovon?|Nennt, was stattdessen nicht geschieht.|(an)statt dass, (an)statt … zu|Er ruhte sich aus, [[anstatt zu arbeiten]].
+komparativ|d|Komparativsatz (Vergleichssatz)|Wie? Im Vergleich zu was?|Nach einem Komparativ steht ‚als‘, bei Gleichheit so, genauso … wie.|als, wie, als dass|Er ist größer, [[als ich dachte]].
+vergleich_irreal|d|Irrealer Vergleichssatz|Wie wenn …?|Vergleich mit etwas Nichtwirklichem, Konjunktiv. Nach ‚als‘ ohne ‚ob‘ steht das Verb an 2. Stelle.|als ob, als wenn, wie wenn, als + Verb|Er tut, [[als ob er schliefe]].
+proportional|d|Proportionalsatz (je-desto-Satz)|In welchem Verhältnis?|je + Komparativ …, desto oder umso + Komparativ …. Im je-Satz steht das Verb am Ende.|je … desto, je … umso|[[Je mehr du übst]], desto besser wirst du.
+adversativ|d|Adversativsatz (Gegensatzsatz)|Im Gegensatz wozu?|Stellt zwei Sachverhalte gegenüber, ersetzbar durch ‚aber‘ oder ‚wohingegen‘.|während, wohingegen, wogegen|Er ist fleißig, [[während sein Bruder faul ist]].
+restriktiv|d|Restriktivsatz (Einschränkungssatz)|Mit welcher Einschränkung?|Schränkt die Aussage des Hauptsatzes ein.|soweit, soviel, außer dass, nur dass, es sei denn|[[Soviel ich weiß]], kommt er morgen.
+lokal|d|Lokalsatz (Ortssatz)|Wo? Woher? Wohin?|Ortsangabe ohne Nomen als Bezugswort (sonst Relativsatz).|wo, woher, wohin|Ich bleibe, [[wo ich bin]].
+verallg|d|Verallgemeinernder Nebensatz|Egal was, wer, wie …?|Die Aussage gilt unabhängig von den Umständen, meist mit ‚auch (immer)‘.|wer, was, wie, wo … auch (immer); egal ob, wer, was; ob … oder|[[Wie du es auch machst]], es ist falsch.
+indirektfrage|f|Indirekter Fragesatz|Was wird erfragt?|Abhängige Frage nach fragen, wissen, erklären. Ja/Nein-Frage mit ‚ob‘, sonst Fragewort. Verb am Ende, meist ein Objektsatz.|ob; wer, was, wann, wo, wie, warum, wozu, welcher|Sie fragt, [[wann der Zug fährt]].~Ich weiß nicht, [[ob er kommt]].
+weiterfuehrend|f|Weiterführender Nebensatz|(keine Satzgliedfrage)|Bezieht sich auf den ganzen Hauptsatz und steht immer dahinter. Ersetzbar durch einen eigenen Hauptsatz (Das freut mich).|was, weshalb, wodurch, wobei, worauf, womit|Er gewann, [[was mich freut]].
+infinitiv|f|Infinitivsatz|je nach Funktion|zu + Infinitiv, kein gebeugtes Verb, kein eigenes Subjekt. Mit um, ohne, (an)statt wird er final, begleitumstand oder substitutiv.|um … zu, ohne … zu, (an)statt … zu|Er versucht, [[pünktlich zu sein]].
+partizip|f|Partizipialsatz|Wie? Wann? Warum?|Partizip I oder II ohne Einleitewort und ohne gebeugtes Verb. In einen vollen Nebensatz umformbar.|keines|[[Müde von der Arbeit]], ging er heim.
+uneingeleitet|f|Uneingeleiteter Nebensatz|je nach Funktion|Kein Einleitewort. Verb an 1. Stelle (Konditional) oder an 2. Stelle (indirekte Rede, Konjunktiv I).|keines|[[Wäre er hier]], würde er helfen.~Sie sagt, [[sie habe keine Zeit]].`.split('\n').forEach(l=>{const p=l.split('|');T[p[0]]={id:p[0],g:p[1],n:p[2],q:p[3],m:p[4],e:p[5],x:p[6].split('~')};ORDER.push(p[0])});
+
+/*ENGINE*/
+const KEY={},KEYS=[];
+function K(keys,c){const e={c:c.split('|').map(x=>{const p=x.split(':');return{t:p[0],b:+p[1],h:p.slice(2).join(':')}})};keys.split(',').forEach(k=>{KEY[k]=e;KEYS.push(k)})}
+K("kaum dass","temporal:6:Folgt unmittelbar auf das Nebensatz-Geschehen");
+K("sodass,so dass","konsekutiv:6:Nennt die Folge des Hauptsatzes");
+K("ohne dass","begleitumstand:6:Etwas geschieht ohne den genannten Umstand");
+K("anstatt dass,statt dass","substitutiv:6:Nennt, was stattdessen nicht passiert|adversativ:3:Kann auch ein Gegensatz sein");
+K("dadurch dass","instrumental:5:Mittel oder Methode (Wodurch?)|kausal:3:Auch ein Grund ist möglich");
+K("auch wenn,selbst wenn,wenn auch,wenngleich,obwohl,obgleich,obschon,obzwar,wiewohl","konzessiv:6:Einräumung, das Geschehen passiert trotzdem");
+K("als ob,als wenn,wie wenn","vergleich_irreal:6:Vergleich mit Gedachtem, meist Konjunktiv II|komparativ:2:Gehört zu den Vergleichssätzen");
+K("als dass","konsekutiv:6:Folge nach ‚zu …‘ (zu schwer, als dass …)|komparativ:2:Formal ein Vergleich");
+K("nur dass,außer dass,insofern als,insoweit als,soviel,soweit,es sei denn","restriktiv:5:Schränkt den Hauptsatz ein|konditional:2:Auch eine Bedingung ist möglich");
+K("sofern,falls,vorausgesetzt dass,angenommen dass,im falle dass,für den fall dass","konditional:6:Bedingung (Unter welcher Bedingung?)");
+K("nun da,jetzt da,jetzt wo","kausal:4:Grund|temporal:3:Auch zeitlich verstehbar");
+K("egal ob,egal wer,egal was,egal wie,egal wo,egal wann,gleichgültig ob,ganz gleich ob,ganz egal ob","verallg:6:Gilt unabhängig von den Umständen");
+K("dass","objekt:4:Wen oder was? Nach sagen, wissen, glauben, hoffen|subjekt:2:Wer oder was? Am Satzanfang oder nach ‚Es ist klar, …‘|praepobj:0:Nach einem Korrelat wie darauf, daran, davon|praedikativ:0:Nach sein, werden, bleiben|inhalt:0:Nach einem abstrakten Nomen (Tatsache, Hoffnung)|konsekutiv:0:Im Hauptsatz steht so, derart oder dermaßen");
+K("ob","indirektfrage:5:Ja/Nein-Frage, meist Objektsatz|inhalt:0:Nach einem Nomen wie Frage oder Zweifel|verallg:0:ob … oder");
+K("weil,zumal","kausal:6:Nennt den Grund (Warum?)");
+K("da","kausal:5:Begründung, ersetzbar durch ‚weil‘|temporal:1:Selten, zeitlich");
+K("wenn","konditional:4:Bedingung, ersetzbar durch ‚falls‘|temporal:3:Zeit, ersetzbar durch ‚sobald‘ oder ‚jedes Mal, wenn‘");
+K("als","temporal:3:Einmaliges Ereignis in der Vergangenheit|komparativ:3:Vergleich, nach Komparativ oder ‚anders‘, ‚nichts‘|vergleich_irreal:0:als + Konjunktiv-Verb (als wäre …)");
+K("wie","komparativ:3:Gleichheit (so, genauso … wie)|modal:3:Art und Weise (Wie?)|indirektfrage:2:Abhängige Frage nach fragen, wissen, zeigen|relativ:0:Nach ‚Art‘ oder ‚Weise‘|verallg:0:wie … auch (immer)");
+K("während","temporal:4:Gleichzeitig, ersetzbar durch ‚als‘ oder ‚solange‘|adversativ:3:Gegensatz, ersetzbar durch ‚wohingegen‘");
+K("nachdem","temporal:6:Vorzeitig, der Nebensatz geschieht zuerst");
+K("bevor,ehe","temporal:6:Nachzeitig, der Nebensatz geschieht später");
+K("bis,seit,seitdem,sobald,sowie,solange,sooft","temporal:6:Zeitangabe (Wann? Seit wann? Bis wann? Wie lange?)");
+K("indem","instrumental:5:Mittel oder Methode (Wodurch?)|modal:2:Art und Weise");
+K("damit","final:6:Zweck oder Absicht (Wozu?)");
+K("wohingegen,wogegen,indes,indessen","adversativ:6:Gegensatz zum Hauptsatz");
+K("je","proportional:6:je … desto oder umso, Verhältnis zweier Größen");
+K("wo,wohin,woher","lokal:4:Ort (Wo?)|relativ:0:Nach einem Orts- oder Zeitnomen (der Ort, wo …)|indirektfrage:2:Abhängige Frage|verallg:0:wo … auch (immer)");
+K("wer","indirektfrage:3:Abhängige Frage|subjekt:3:Subjektsatz ohne Bezugswort (Wer zuletzt lacht, …)|verallg:0:wer … auch (immer)");
+K("wen,wem,wessen","indirektfrage:3:Abhängige Frage|objekt:3:Objektsatz ohne Bezugswort (Ich helfe, wem ich kann)|verallg:0:… auch (immer)");
+K("was","relativ:0:Nach alles, nichts, etwas, das oder einem Superlativ|weiterfuehrend:3:Bezieht sich auf den ganzen Satz davor|indirektfrage:3:Abhängige Frage|subjekt:2:Subjektsatz am Satzanfang|verallg:0:was … auch (immer)");
+K("warum,wieso,wann","indirektfrage:5:Abhängige Frage, Verb am Ende|verallg:0:… auch (immer)");
+K("weshalb,weswegen,wodurch,wobei,wofür,womit,wozu,worauf,woran,worüber,wonach,woraufhin,wovon,woraus","weiterfuehrend:3:Bezieht sich auf den ganzen Satz davor|indirektfrage:3:Abhängige Frage nach fragen, wissen");
+K("welcher,welche,welches,welchen,welchem","relativ:4:Gehobenes Relativpronomen, ersetzbar durch der, die, das|indirektfrage:3:Abhängige Frage");
+const ARTS=new Set("der,die,das,dem,den,dessen,deren,denen".split(','));
+K([...ARTS].join(','),"relativ:6:Relativpronomen, bezieht sich auf ein Nomen davor, das Verb steht am Ende. Probe: ersetzbar durch ‚welcher, welche, welches‘. Bei ‚das‘ gilt: ersetzbar durch ‚dieses‘ oder ‚welches‘, dann ist es ‚das‘, sonst ‚dass‘");
+KEYS.sort((a,b)=>b.length-a.length);
+const WH=new Set("wer wen wem wessen was wie wo wohin woher wann warum wieso weshalb weswegen wozu womit welcher welche welches".split(' '));
+const PRON=new Set("ich du er sie es wir ihr man".split(' '));
+const KV1=new Set("hätte hättest hätten hättet wäre wärst wären wärt würde würdest würden würdet könnte könntest könnten müsste müssten sollte wüsste gäbe käme".split(' '));
+const AUXV=new Set("bin bist ist sind seid war waren warst wart sei seien wäre wären hat habe haben hast habt hatte hatten hätte hätten wird werde werden wurde wurden würde würden kann kannst können konnte konnten könnte könnten muss musst müssen musste mussten müsste will willst wollen wollte soll sollen sollte sollten darf dürfen durfte mag mögen möchte möchten tut tun gibt geht kommt kam ging sah weiß wusste gewesen gehabt worden geworden".split(' '));
+const KONJ1=/(?<![\p{L}])(sei|seien|habe|wolle|könne|müsse|solle|dürfe|werde|wisse|komme|gehe|sehe|nehme|gebe|bleibe|finde|fahre|mache|arbeite|brauche|wohne|lebe|schlafe|esse|lese|spiele|kenne)(?![\p{L}])/iu;
+const SAYV=/(sag|mein|behaupt|erzähl|berichte|erklär|antwort|glaub|denk|schreib|vermut|hoff|wei(ß|ss)|bestätig|versicher|fürcht|scheint)\p{L}*\s*$/iu;
+const ASK=/(?<![\p{L}])(frag|wei(ß|ss)|wissen|erkl|zeig|erzähl|verrat|erfahr|versteh|überleg|beschreib|merk|prüf|klär|entscheid|ahn|seh|hör|zweifel|egal|unklar)/iu;
+const VERBS=/(?<![\p{L}])(sag|wei(ß|ss)|glaub|denk|hoff|seh|hör|mein|behaupt|erkl|find|fürcht|bemerk|versprech|zeig|bedauer|freu|wünsch|vermut)/iu;
+const ZUINF=/(?<![\p{L}])(?:zu\s+\p{L}+n|(?:an|auf|aus|ab|ein|mit|vor|nach|her|hin|weg|fest|fort|zurück|bei|los|teil|weiter|heraus|hinaus|herein|hinein|zusammen|wieder)zu\p{L}{2,}n)\s*$/iu;
+const PREL=/^(mit|in|auf|an|von|zu|bei|aus|für|über|unter|nach|durch|gegen|um|ohne|vor|hinter|neben|zwischen|seit|außer|wegen|während|innerhalb|außerhalb|aufgrund)\s+(dem|der|den|denen|dessen|deren|welchem|welcher|welchen|welches|was|wem|wen|wessen|die|das)(?![\p{L}])/iu;
+const ADV=/^(deshalb|deswegen|darum|daher|trotzdem|dennoch|folglich|außerdem|also|sonst|allerdings|jedoch|dagegen|hingegen|somit|ansonsten)(?![\p{L}])/iu;
+const verbEnd=l=>{const w=l.replace(/[.!?…"“”„']+$/,'').trim().split(/\s+/),x=w[w.length-1]||'';return AUXV.has(x)||(x.length>=3&&/(en|t|te|ten|st|e|n)$/.test(x))};
+const tst=(re,s)=>re.test(s);
+function adj(key,s,x){
+ const add=(t,v)=>{if(t in s)s[t]+=v},{i,self,prev,all,next}=x,ask=ASK.test(prev);
+ if(/(?<![\p{L}])auch(?![\p{L}])/iu.test(self))add('verallg',8);
+ switch(key){
+ case 'dass':
+  if(tst(VERBS,prev))add('objekt',2);
+  if(i===0)add('subjekt',2);
+  if(tst(/(?<![\p{L}])es\s+(ist|war|wäre|bleibt|stimmt|scheint|freut|ärgert)/iu,prev))add('subjekt',3);
+  if(tst(/(darauf|daran|davon|dafür|darüber|damit|dazu|darum|danach|daraus|dagegen|davor)\s*$/iu,prev))add('praepobj',7);
+  if(tst(/(ist|war|wird|bleibt|wäre|sind)\s*$/iu,prev))add('praedikativ',5);
+  if(tst(/(tatsache|hoffnung|meinung|gefühl|frage|behauptung|gerücht|angst|wunsch|beweis|idee|annahme|vermutung|überzeugung|sorge|nachricht|eindruck|zweifel|möglichkeit|glaube|ahnung|befürchtung|verdacht|hinweis|aussage|ansicht|absicht|erwartung)\s*$/iu,prev))add('inhalt',6);
+  if(tst(/(?<![\p{L}])(so|derart|dermaßen|solch\p{L}*)(?![\p{L}])/iu,all)){add('konsekutiv',6);add('subjekt',-2)}
+  break;
+ case 'ob':
+  if(tst(/(frage|zweifel|ungewissheit|unsicherheit)\s*$/iu,prev))add('inhalt',6);
+  if(tst(/(?<![\p{L}])oder(?![\p{L}])/iu,self))add('verallg',6);break;
+ case 'wenn':
+  if(tst(/(hätte|wäre|würde|könnte|müsste|sollte|dürfte|wüsste)/iu,self)||tst(/(?<![\p{L}])dann(?![\p{L}])|würde|wäre|hätte|könnte/iu,next))add('konditional',4);
+  if(tst(/(immer|jedes\s?mal|oft|manchmal|stets|meistens)\s*$/iu,prev))add('temporal',5);break;
+ case 'als':
+  if(tst(/(er|mehr|weniger|besser|lieber|eher|anders|früher|später|länger|nichts)\s*$/iu,prev))add('komparativ',5);
+  if(tst(/(?<![\p{L}])(war|kam|ging|sah|fand|fuhr|stand|lief|nahm|gab|blieb|hatte|wurde|\p{L}{3,}te)(?![\p{L}])/iu,self))add('temporal',2);
+  if(tst(/^als\s+(wäre|hätte|würde|könnte|sei|habe|müsste|sollte)/iu,self))add('vergleich_irreal',9);break;
+ case 'wie':
+  if(tst(/(?<![\p{L}])(so|ebenso|genauso|gleich\p{L}*)(?![\p{L}])/iu,prev))add('komparativ',5);
+  if(ask)add('indirektfrage',4);
+  if(tst(/(art|weise)\s*$/iu,prev))add('relativ',6);break;
+ case 'was':
+  if(tst(/(alles|nichts|etwas|vieles|manches|das|einiges|ste)\s*$/iu,prev))add('relativ',6);
+  if(i>0)add('weiterfuehrend',2);
+  if(ask)add('indirektfrage',4);
+  if(i===0)add('subjekt',3);break;
+ case 'wer':if(ask)add('indirektfrage',4);if(i===0)add('subjekt',2);break;
+ case 'wo':case 'wohin':case 'woher':
+  if(tst(/(ort|stadt|haus|land|platz|gegend|straße|dorf|raum|stelle|gebiet|welt|zeit|moment|tag|situation|fall)\s*$/iu,prev))add('relativ',5);
+  if(ask)add('indirektfrage',4);
+  if(tst(/(überall|dort|hier)\s*$/iu,prev))add('lokal',2);break;
+ default:
+  if(ask)add('indirektfrage',4);
+  if(i>0&&prev.split(/\s+/).length>=3)add('weiterfuehrend',2);
+ }
+}
+function classify(segs,i,isQ){
+ const orig=segs[i];
+ let l=orig.toLowerCase().replace(/^[„“"'»«(\s]+|[„“"'»«)\s]+$/g,'');
+ const x={i,prev:i?segs[i-1].toLowerCase():'',next:segs[i+1]?segs[i+1].toLowerCase():'',all:segs.slice(0,i).join(' ').toLowerCase()};
+ const H={orig,neb:false,msg:'Kein Einleitewort erkannt, vermutlich Hauptsatz oder Satzrest (gebeugtes Verb an 1. oder 2. Stelle).'};
+ const m=l.match(/^(und|oder|aber|sondern|denn|doch)\s+(.+)$/);
+ if(m){if(m[1]==='denn')return{...H,msg:'‚denn‘ ordnet nebenordnend an, der Satz danach ist ein Hauptsatz (Verb an 2. Stelle).'};l=m[2]}
+ x.self=l;
+ const words=l.split(/\s+/),first=words[0],n=words.length;
+ if(ADV.test(l))return{...H,msg:'‚'+first+'‘ ist ein Adverb und leitet einen Hauptsatz ein (Verb direkt dahinter).'};
+ if(/^(desto|umso)(?![\p{L}])/iu.test(l))return{...H,msg:'‚desto‘ und ‚umso‘ gehören zum Hauptsatz des je-desto-Gefüges.'};
+ let key=KEYS.find(k=>l===k||l.startsWith(k+' '));
+ if(key&&ARTS.has(key)&&!(i>0&&n>=3&&verbEnd(l)))key=null;
+ if(key&&isQ&&segs.length===1&&WH.has(key))return{...H,msg:'Direkte Frage, also ein Hauptsatz: Das Fragewort steht vorn, das Verb an 2. Stelle.'};
+ let cands=[],form='Konjunktionalsatz',span=key,warn=false,mm;
+ if(key){
+  const e=KEY[key],s={};e.c.forEach(c=>s[c.t]=c.b);adj(key,s,x);
+  cands=e.c.map(c=>({...c,sc:s[c.t]})).filter(c=>c.sc>0).sort((a,b)=>b.sc-a.sc);
+  if(cands[0]){const t=cands[0].t;form=t==='relativ'?'Relativsatz':t==='indirektfrage'?'indirekter Fragesatz':t==='weiterfuehrend'?'weiterführender Relativsatz':WH.has(key)?'Satz mit Fragewort':'Konjunktionalsatz'}
+  warn=n>=3&&!verbEnd(l);
+ }else if((mm=l.match(PREL))&&i>0&&n>=3&&verbEnd(l)){
+  cands=[{t:'relativ',sc:6,h:'Relativpronomen mit Präposition, der Kasus ergibt sich aus der Präposition'}];form='Relativsatz';span=mm[0];
+ }else if(ZUINF.test(l)&&(/^(um|ohne|statt|anstatt)$/.test(first)||i>0||(n<=6&&!PRON.has(first)))){
+  const t=first==='um'?'final':first==='ohne'?'begleitumstand':/^(statt|anstatt)$/.test(first)?'substitutiv':'infinitiv';
+  cands=[{t,sc:5,h:'zu + Infinitiv ohne gebeugtes Verb, kein eigenes Subjekt'}];form='Infinitivsatz';span=t==='infinitiv'?'':first;
+ }else if(i===0&&segs.length>1&&KV1.has(first)){
+  cands=[{t:'konditional',sc:5,h:'Verb an 1. Stelle im Konjunktiv II, ‚wenn‘ lässt sich ergänzen'}];form='uneingeleiteter Nebensatz';span=first;
+ }else if(i>0&&SAYV.test(x.prev)&&(PRON.has(first)||KONJ1.test(l))){
+  cands=[{t:'objekt',sc:5,h:'‚dass‘ ist weggelassen, das Verb steht an 2. Stelle'+(KONJ1.test(l)?'. Konjunktiv I deutet auf indirekte Rede'.replace('.',','):'')}];form='uneingeleiteter Nebensatz';span=first;
+ }else if(/^\p{L}+(end|ende)$/iu.test(first)&&n<=8){
+  cands=[{t:'partizip',sc:4,h:'Partizip I am Anfang, kein gebeugtes Verb. Umformbar in einen vollen Nebensatz'}];form='Partizipialsatz';span=first;
+ }
+ return cands.length?{orig,neb:true,cands,form,span,warn}:H;
+}
+function analyze(text){
+ return (text.match(/[^.!?…]+[.!?…]*/g)||[]).map(s=>s.trim()).filter(Boolean).map(s=>{
+  const isQ=/\?\s*$/.test(s);
+  const t=s.replace(/[.!?…]+\s*$/,'').replace(/(?<![\p{L}])(dadurch|angenommen|vorausgesetzt|statt|anstatt|ohne|so|kaum|nur|außer|nun|jetzt)\s*,\s*(dass|da|wo)(?![\p{L}])/giu,'$1 $2');
+  const segs=t.split(/\s*[,;:–—]\s*/).map(v=>v.trim()).filter(Boolean);
+  return segs.map((_,i)=>classify(segs,i,isQ));
+ });
+}
+/*UI*/
+const $=id=>document.getElementById(id);
+const esc=s=>s.replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const mk=s=>esc(s).replace(/\[\[(.+?)\]\]/g,'<mark>$1</mark>');
+const col=t=>'var('+G[T[t].g][1]+')';
+function hl(c){
+ if(!c.span)return esc(c.orig);
+ const i=c.orig.toLowerCase().indexOf(c.span.toLowerCase());
+ return i<0?esc(c.orig):esc(c.orig.slice(0,i))+'<b>'+esc(c.orig.slice(i,i+c.span.length))+'</b>'+esc(c.orig.slice(i+c.span.length));
+}
+function render(res){
+ if(!res.length)return'<p class="mut">Bitte einen Satz eingeben.</p>';
+ return res.map(r=>{
+  const top=r.map(c=>c.neb?T[c.cands[0].t]:null);
+  let h='<div class="sent">'+r.map((c,k)=>{const t=top[k];return`<span class="cl" style="--c:${t?col(t.id):'var(--line)'}"><span class="tx">${c.neb?hl(c):esc(c.orig)}</span><span class="br"></span><span class="lb">${t?esc(t.n):'Hauptsatz'}</span></span>`}).join('')+'</div>';
+  r.forEach((c,k)=>{
+   if(!c.neb){h+=`<p class="mut">Teilsatz ${k+1} („${esc(c.orig)}“): ${esc(c.msg)}</p>`;return}
+   const t=top[k],multi=c.cands.length>1,close=multi&&c.cands[0].sc-c.cands[1].sc<2;
+   h+=`<article class="det" style="--c:${col(t.id)}"><h3>${esc(t.n)} <small class="mut">${multi?(close?'mehrdeutig, der Kontext entscheidet':'wahrscheinlich'):'eindeutig'}</small></h3>
+<p class="fm">Teilsatz ${k+1}: „${esc(c.orig)}“. Form: ${c.form}. Gruppe: ${G[t.g][0]}. Frage: ${esc(t.q)}</p>`;
+   if(c.warn)h+='<p class="warn">Prüfe: Das gebeugte Verb steht nicht erkennbar am Ende. Vielleicht ist es doch ein Hauptsatz oder der Satz ist unterbrochen.</p>';
+   h+='<ul>'+c.cands.map((d,j)=>`<li><b style="color:${col(d.t)}">${esc(T[d.t].n)}</b>${multi&&j===0?' (wahrscheinlichste)':''}: ${esc(d.h)}. <button class="btn sm" data-o="${d.t}">Beschreibung</button></li>`).join('')+'</ul></article>';
+  });
+  return h;
+ }).join('<hr>');
+}
+function run(){$('out').innerHTML=render(analyze($('inp').value))}
+function tab(id){
+ document.querySelectorAll('nav button').forEach(b=>b.setAttribute('aria-selected',b.dataset.t===id));
+ ['tool','types','quiz'].forEach(t=>$('p-'+t).hidden=t!==id);
+}
+let grp='';
+function list(){
+ const q=$('q').value.toLowerCase().trim();
+ $('list').innerHTML=ORDER.map(id=>T[id]).filter(t=>(!grp||t.g===grp)&&(!q||(t.n+t.q+t.m+t.e+t.x.join(' ')).toLowerCase().includes(q))).map(t=>
+ `<details id="t-${t.id}" open style="--c:${col(t.id)}"><summary>${esc(t.n)}<small>${esc(G[t.g][0])}. Frage: ${esc(t.q)}</small></summary>
+<h4>Erkennungsmerkmale</h4><p>${esc(t.m)}</p><h4>Typische Einleitewörter</h4><p>${esc(t.e)}</p><h4>Beispiele</h4><ul>${t.x.map(e=>'<li>'+mk(e)+'</li>').join('')}</ul></details>`).join('')||'<p class="mut">Nichts gefunden.</p>';
+}
+function openType(id){
+ tab('types');grp='';$('q').value='';fg();list();
+ const el=$('t-'+id);el.open=true;el.scrollIntoView({block:'start'});el.classList.add('flash');setTimeout(()=>el.classList.remove('flash'),1500);
+}
+function fg(){
+ $('gf').innerHTML=[['','Alle']].concat(Object.entries(G).map(([k,v])=>[k,v[0]])).map(([k,n])=>`<button class="btn sm" data-g="${k}" aria-pressed="${k===grp}">${n}</button>`).join('')+'<button class="btn sm" id="ca">Alle zuklappen</button>';
+}
+const EX=["Ich bleibe zu Hause, weil ich krank bin.","Wenn es regnet, nehmen wir den Bus.","Das Buch, das ich lese, ist spannend.","Er ging, ohne ein Wort zu sagen.","Ich weiß nicht, ob er kommt.","Je mehr du übst, desto besser wirst du.","Er ist größer, als ich dachte.","Hätte ich Zeit, käme ich mit.","Er gewann, was mich freut.","Es war so kalt, dass der See zufror."];
+$('ex').innerHTML=EX.map(e=>`<button class="btn sm">${esc(e)}</button>`).join('');
+$('ex').onclick=e=>{if(e.target.matches('button')){$('inp').value=e.target.textContent;run()}};
+$('go').onclick=run;$('clr').onclick=()=>{$('inp').value='';run();$('inp').focus()};
+$('inp').addEventListener('keydown',e=>{if(e.key==='Enter'&&(e.ctrlKey||e.metaKey)){e.preventDefault();run()}});
+$('out').onclick=e=>{const o=e.target.dataset.o;if(o)openType(o)};
+document.querySelector('nav').onclick=e=>{if(e.target.dataset.t)tab(e.target.dataset.t)};
+$('q').oninput=list;
+$('gf').onclick=e=>{const b=e.target;if(b.id==='ca'){const d=document.querySelectorAll('#list details'),o=[...d].some(x=>x.open);d.forEach(x=>x.open=!o);b.textContent=o?'Alle aufklappen':'Alle zuklappen'}else if('g' in b.dataset){grp=b.dataset.g;fg();list()}};
+[['Wer oder was?','Subjektsatz'],['Wen oder was? Wem?','Objektsatz'],['Worauf? Woran? Wovon?','Präpositionalobjektsatz'],['Was für ein …? Welcher …?','Relativsatz oder Inhaltssatz'],['Wann? Seit wann? Wie lange?','Temporalsatz'],['Warum? Weshalb?','Kausalsatz'],['Unter welcher Bedingung?','Konditionalsatz'],['Trotz welchen Umstands?','Konzessivsatz'],['Mit welcher Folge?','Konsekutivsatz'],['Wozu? Mit welcher Absicht?','Finalsatz'],['Wie? Wodurch?','Modalsatz oder Instrumentalsatz'],['Im Vergleich zu was?','Komparativsatz'],['Wo? Woher? Wohin?','Lokalsatz'],['Keine Frage möglich, bezieht sich auf den ganzen Satz','Weiterführender Nebensatz']].forEach(r=>{$('qt').insertAdjacentHTML('beforeend',`<tr><td>${r[0]}</td><td>${r[1]}</td></tr>`)});
+fg();list();run();
+</script>
+</body>
+</html>

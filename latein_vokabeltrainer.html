@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Latein-Vokabeltrainer</title>
+<style>
+  :root{
+    --bg:#f6f4ef; --card:#ffffff; --ink:#1e1d1a; --muted:#6c685f; --line:#e2ded3;
+    --accent:#8c2f39; --accent-ink:#fff; --ok:#2f7d4f; --ok-bg:#e4f3ea; --bad:#b3261e; --bad-bg:#fbe6e4;
+    --radius:14px; --shadow:0 1px 2px rgba(0,0,0,.05),0 6px 20px rgba(0,0,0,.05);
+  }
+  @media (prefers-color-scheme:dark){
+    :root{ --bg:#17161a; --card:#222126; --ink:#f0eee8; --muted:#a09c93; --line:#37353c;
+      --accent:#d56b76; --accent-ink:#1a1214; --ok:#6fcf97; --ok-bg:#1d3326; --bad:#ff8a80; --bad-bg:#3b1f1e;
+      --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.3);}
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0}
+  body{font:16px/1.5 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;background:var(--bg);color:var(--ink);min-height:100vh}
+  .wrap{max-width:860px;margin:0 auto;padding:20px 16px 60px}
+  header{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:18px;flex-wrap:wrap}
+  h1{font-family:Georgia,"Times New Roman",serif;font-size:1.7rem;margin:0;letter-spacing:.01em}
+  h1 span{color:var(--accent)}
+  h2{font-size:1.05rem;margin:0 0 12px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px;margin-bottom:16px}
+  .muted{color:var(--muted);font-size:.9rem}
+  button,.btn{font:inherit;border:1px solid var(--line);background:var(--card);color:var(--ink);padding:9px 16px;border-radius:10px;cursor:pointer;transition:transform .05s,background .15s}
+  button:hover,.btn:hover{background:color-mix(in srgb,var(--card) 88%,var(--accent))}
+  button:active{transform:scale(.98)}
+  button.primary{background:var(--accent);color:var(--accent-ink);border-color:var(--accent);font-weight:600}
+  button.primary:hover{filter:brightness(1.08);background:var(--accent)}
+  button:disabled{opacity:.45;cursor:not-allowed}
+  button.danger{color:var(--bad)}
+  .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+  .drop{border:2px dashed var(--line);border-radius:var(--radius);padding:26px 16px;text-align:center;cursor:pointer;transition:.15s}
+  .drop:hover,.drop.over{border-color:var(--accent);background:color-mix(in srgb,var(--card) 94%,var(--accent))}
+  .drop strong{display:block;font-size:1.05rem;margin-bottom:4px}
+  .progress{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:12px}
+  .progress>div{height:100%;width:0;background:var(--accent);transition:width .25s}
+  .status{margin-top:8px;font-size:.92rem;min-height:1.3em}
+  .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+  .thumbs img{height:64px;border-radius:8px;border:1px solid var(--line)}
+  table{width:100%;border-collapse:collapse}
+  th{text-align:left;font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:4px 6px}
+  td{padding:3px 4px}
+  td input{width:100%;font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+  td input:focus,.answer:focus,textarea:focus,select:focus{outline:2px solid var(--accent);outline-offset:0}
+  td.n{width:34px;color:var(--muted);text-align:right;font-size:.85rem}
+  td.x{width:42px}
+  td.x button{padding:6px 10px;line-height:1}
+  .tablewrap{max-height:52vh;overflow:auto;border:1px solid var(--line);border-radius:10px;padding:6px}
+  textarea,select{font:inherit;width:100%;padding:9px 10px;border:1px solid var(--line);border-radius:8px;background:var(--bg);color:var(--ink)}
+  textarea{min-height:110px;resize:vertical}
+  label.opt{display:flex;flex-direction:column;gap:4px;font-size:.85rem;color:var(--muted);flex:1;min-width:170px}
+  details summary{cursor:pointer;font-weight:600}
+  details[open] summary{margin-bottom:10px}
+  /* Quiz */
+  .quiz-top{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;gap:10px;flex-wrap:wrap}
+  .pill{font-size:.85rem;color:var(--muted)}
+  .qcard{text-align:center;padding:34px 20px 28px}
+  .dir{font-size:.8rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:10px}
+  .prompt{font-family:Georgia,serif;font-size:clamp(1.7rem,6vw,2.6rem);margin:6px 0 22px;word-break:break-word}
+  .answer{width:100%;max-width:480px;font:inherit;font-size:1.15rem;padding:12px 14px;border:2px solid var(--line);border-radius:12px;background:var(--bg);color:var(--ink);text-align:center}
+  .feedback{margin:18px auto 0;max-width:520px;padding:12px 14px;border-radius:12px;text-align:left;display:none}
+  .feedback.ok{display:block;background:var(--ok-bg);color:var(--ok)}
+  .feedback.bad{display:block;background:var(--bad-bg);color:var(--bad)}
+  .feedback b{color:var(--ink)}
+  .reveal{font-size:1.4rem;margin:8px 0 6px;font-family:Georgia,serif}
+  .actions{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
+  .score{font-size:3rem;font-family:Georgia,serif;margin:6px 0}
+  .badlist{text-align:left;max-width:560px;margin:16px auto 0}
+  .badlist div{padding:6px 0;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;gap:12px}
+  .hidden{display:none!important}
+  @media (max-width:520px){ .wrap{padding:14px 10px 50px} .card{padding:14px} }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Latein<span>·</span>Vokabeltrainer</h1>
+    <div class="muted" id="countInfo"></div>
+  </header>
+
+  <!-- ================= SETUP ================= -->
+  <section id="setup">
+    <div class="card">
+      <h2>1 · Foto der Vokabelseite hochladen</h2>
+      <div class="drop" id="drop" tabindex="0">
+        <strong>📷 Foto auswählen, hierher ziehen oder aufnehmen</strong>
+        <span class="muted">Mehrere Seiten sind möglich. Gerade, gut ausgeleuchtet und Latein links, Deutsch rechts, dann klappt es am besten.</span>
+      </div>
+      <input type="file" id="file" accept="image/*" multiple hidden>
+      <div class="thumbs" id="thumbs"></div>
+      <div class="progress hidden" id="progWrap"><div id="prog"></div></div>
+      <div class="status muted" id="status"></div>
+
+      <details style="margin-top:14px">
+        <summary>Erkennungs-Einstellungen</summary>
+        <div class="row">
+          <label class="opt">Seitenlayout
+            <select id="psm">
+              <option value="6">Tabelle / Vokabelspalten (empfohlen)</option>
+              <option value="4">Einspaltiger Text mit variabler Größe</option>
+              <option value="3">Automatisch</option>
+            </select>
+          </label>
+          <label class="opt">Sprachen für die Erkennung
+            <select id="langs">
+              <option value="lat+deu">Latein + Deutsch (empfohlen)</option>
+              <option value="deu+lat">Deutsch + Latein</option>
+              <option value="deu">Nur Deutsch</option>
+            </select>
+          </label>
+        </div>
+        <p class="muted">Die Texterkennung läuft komplett in deinem Browser, das Foto wird nirgendwo hochgeladen. Beim ersten Mal werden die Sprachdaten (ca. 10–20 MB) geladen, dafür brauchst du Internet.</p>
+      </details>
+    </div>
+
+    <div class="card">
+      <h2>2 · Vokabeln prüfen und korrigieren</h2>
+      <p class="muted" style="margin-top:-6px">Die Erkennung macht gerade bei Längenstrichen (ā, ē) und Sonderzeichen Fehler. Kurz drüberschauen lohnt sich. Du kannst alles direkt bearbeiten.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th></th><th>Latein</th><th>Deutsch</th><th></th></tr></thead>
+          <tbody id="tbody"></tbody>
+        </table>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button id="addRow">＋ Zeile</button>
+        <button id="clearAll" class="danger">Alle löschen</button>
+        <span style="flex:1"></span>
+        <button id="exportBtn">Liste speichern (.txt)</button>
+      </div>
+
+      <details style="margin-top:14px">
+        <summary>Vokabeln als Text einfügen</summary>
+        <p class="muted">Eine Vokabel pro Zeile, getrennt durch <code>=</code>, <code>;</code>, Tab oder <code> - </code> (z. B. <code>amicus, -i m. = Freund</code>).</p>
+        <textarea id="paste" placeholder="amicus, -i m. = Freund&#10;laudare = loben"></textarea>
+        <div class="row" style="margin-top:8px"><button id="pasteBtn">Hinzufügen</button></div>
+      </details>
+    </div>
+
+    <div class="card">
+      <h2>3 · Abfrage starten</h2>
+      <div class="row">
+        <label class="opt">Richtung
+          <select id="dir">
+            <option value="la-de">Latein → Deutsch</option>
+            <option value="de-la">Deutsch → Latein</option>
+            <option value="mix">Gemischt</option>
+          </select>
+        </label>
+        <label class="opt">Art der Abfrage
+          <select id="mode">
+            <option value="type">Eintippen (automatisch prüfen)</option>
+            <option value="flip">Karteikarten (selbst bewerten)</option>
+          </select>
+        </label>
+        <label class="opt">Anzahl
+          <select id="amount"></select>
+        </label>
+      </div>
+      <div class="row" style="margin-top:14px">
+        <button class="primary" id="start" style="padding:12px 26px;font-size:1.05rem">▶ Abfrage starten</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= QUIZ ================= -->
+  <section id="quiz" class="hidden">
+    <div class="quiz-top">
+      <button id="quitBtn">← Beenden</button>
+      <div class="pill" id="qInfo"></div>
+    </div>
+    <div class="progress" style="margin:0 0 14px"><div id="qProg"></div></div>
+
+    <div class="card qcard" id="qcard">
+      <div class="dir" id="qDir"></div>
+      <div class="prompt" id="qPrompt"></div>
+
+      <div id="typeArea">
+        <input class="answer" id="answer" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Antwort eingeben …">
+        <div class="actions"><button class="primary" id="checkBtn">Prüfen</button><button id="skipBtn">Weiß ich nicht</button></div>
+      </div>
+
+      <div id="flipArea" class="hidden">
+        <div class="actions"><button class="primary" id="showBtn">Lösung zeigen</button></div>
+      </div>
+
+      <div class="feedback" id="feedback"></div>
+
+      <div class="actions hidden" id="rateArea">
+        <button id="wrongBtn" class="danger">✗ Nicht gewusst</button>
+        <button id="rightBtn" class="primary">✓ Gewusst</button>
+      </div>
+      <div class="actions hidden" id="nextArea">
+        <button id="overrideBtn" class="hidden">Trotzdem richtig</button>
+        <button class="primary" id="nextBtn">Weiter ↵</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= RESULT ================= -->
+  <section id="result" class="hidden">
+    <div class="card qcard">
+      <div class="dir">Ergebnis</div>
+      <div class="score" id="rScore"></div>
+      <div class="muted" id="rText"></div>
+      <div class="badlist" id="rBad"></div>
+      <div class="actions" style="margin-top:24px">
+        <button class="primary" id="retryBtn">Nur die falschen nochmal</button>
+        <button id="againBtn">Neue Runde (alle)</button>
+        <button id="backBtn">Zur Vokabelliste</button>
+      </div>
+    </div>
+  </section>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
+<script>
+'use strict';
+/* ====================== Hilfsfunktionen ====================== */
+const $ = s => document.querySelector(s);
+const uid = () => Math.random().toString(36).slice(2, 10);
+const median = a => { if(!a.length) return 0; const s=[...a].sort((x,y)=>x-y); const m=s.length>>1; return s.length%2?s[m]:(s[m-1]+s[m])/2; };
+function shuffle(a){ a=[...a]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
+function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+/* ====================== Zustand ====================== */
+const STORE = 'latein-vokabeltrainer-v1';
+let vocab = [];
+try { vocab = JSON.parse(localStorage.getItem(STORE) || '[]'); } catch(e){ vocab = []; }
+const save = () => { try{ localStorage.setItem(STORE, JSON.stringify(vocab)); }catch(e){} updateCount(); };
+
+/* ====================== Vokabelliste (UI) ====================== */
+function updateCount(){
+  const n = vocab.filter(v=>v.la.trim()&&v.de.trim()).length;
+  $('#countInfo').textContent = n ? `${n} Vokabeln gespeichert` : '';
+  const sel = $('#amount'), old = sel.value;
+  const opts = [['all','Alle ('+n+')']];
+  [10,20,30,50].forEach(k=>{ if(n>k) opts.push([k,k+' zufällige']); });
+  sel.innerHTML = opts.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('');
+  if([...sel.options].some(o=>o.value===old)) sel.value = old;
+}
+function renderTable(focusLast){
+  const tb = $('#tbody');
+  tb.innerHTML = vocab.map((v,i)=>`
+    <tr data-id="${v.id}">
+      <td class="n">${i+1}</td>
+      <td><input data-f="la" value="${esc(v.la)}" placeholder="Latein"></td>
+      <td><input data-f="de" value="${esc(v.de)}" placeholder="Deutsch"></td>
+      <td class="x"><button title="Zeile löschen" data-del>✕</button></td>
+    </tr>`).join('') || `<tr><td colspan="4" class="muted" style="padding:16px;text-align:center">Noch keine Vokabeln. Lade ein Foto hoch oder füge Text ein.</td></tr>`;
+  updateCount();
+  if(focusLast){ const ins = tb.querySelectorAll('tr:last-child input'); if(ins[0]) ins[0].focus(); }
+}
+$('#tbody').addEventListener('input', e=>{
+  const tr = e.target.closest('tr'); if(!tr) return;
+  const v = vocab.find(x=>x.id===tr.dataset.id); if(!v) return;
+  v[e.target.dataset.f] = e.target.value; save();
+});
+$('#tbody').addEventListener('click', e=>{
+  if(!e.target.closest('[data-del]')) return;
+  const id = e.target.closest('tr').dataset.id;
+  vocab = vocab.filter(x=>x.id!==id); save(); renderTable();
+});
+$('#addRow').onclick = ()=>{ vocab.push({id:uid(),la:'',de:''}); save(); renderTable(true); };
+$('#clearAll').onclick = ()=>{ if(vocab.length && confirm('Wirklich alle Vokabeln löschen?')){ vocab=[]; save(); renderTable(); } };
+$('#exportBtn').onclick = ()=>{
+  const txt = vocab.filter(v=>v.la||v.de).map(v=>`${v.la} = ${v.de}`).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));
+  a.download = 'latein-vokabeln.txt'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+};
+$('#pasteBtn').onclick = ()=>{
+  const lines = $('#paste').value.split(/\r?\n/);
+  let added = 0;
+  for(const raw of lines){
+    const line = raw.trim(); if(!line) continue;
+    const m = line.split(/\t|\s=\s|=|;|\s[–—-]\s/);
+    if(m.length>=2){ const la=m[0].trim(), de=m.slice(1).join(', ').trim(); if(la&&de){ vocab.push({id:uid(),la,de}); added++; } }
+  }
+  if(added){ $('#paste').value=''; save(); renderTable(); setStatus(`${added} Vokabeln hinzugefügt.`); }
+  else alert('Keine passenden Zeilen gefunden. Format: latein = deutsch');
+};
+
+/* ====================== Bild-Vorverarbeitung ====================== */
+async function loadBitmap(file){
+  try { return await createImageBitmap(file, {imageOrientation:'from-image'}); }
+  catch(e){
+    return await new Promise((res,rej)=>{ const img=new Image(); img.onload=()=>res(img); img.onerror=rej; img.src=URL.createObjectURL(file); });
+  }
+}
+async function preprocess(file){
+  const bmp = await loadBitmap(file);
+  const w0 = bmp.width, h0 = bmp.height;
+  const target = 2400;                     // Zielgröße der langen Kante
+  const scale = Math.min(2, target / Math.max(w0,h0));
+  const w = Math.round(w0*scale), h = Math.round(h0*scale);
+  const c = document.createElement('canvas'); c.width=w; c.height=h;
+  const ctx = c.getContext('2d', {willReadFrequently:true});
+  ctx.drawImage(bmp,0,0,w,h);
+  const img = ctx.getImageData(0,0,w,h), d = img.data;
+  // Graustufen + Histogramm
+  const hist = new Uint32Array(256);
+  for(let i=0;i<d.length;i+=4){ const g=(d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114)|0; d[i]=d[i+1]=d[i+2]=g; hist[g]++; }
+  // Kontrast strecken (2%/98% Perzentil)
+  const total = w*h; let acc=0, lo=0, hi=255;
+  for(let i=0;i<256;i++){ acc+=hist[i]; if(acc>=total*0.02){ lo=i; break; } }
+  acc=0; for(let i=255;i>=0;i--){ acc+=hist[i]; if(acc>=total*0.02){ hi=i; break; } }
+  const rng = Math.max(1,hi-lo);
+  for(let i=0;i<d.length;i+=4){ let g=((d[i]-lo)*255/rng); g=g<0?0:g>255?255:g; d[i]=d[i+1]=d[i+2]=g; }
+  ctx.putImageData(img,0,0);
+  return c;
+}
+
+/* ====================== OCR ====================== */
+let worker = null, workerKey = '';
+async function getWorker(langs, psm){
+  const key = langs+'|'+psm;
+  if(worker && workerKey===key) return worker;
+  if(worker){ try{ await worker.terminate(); }catch(e){} worker=null; }
+  setStatus('Lade Texterkennung (beim ersten Mal etwas Geduld) …');
+  worker = await Tesseract.createWorker(langs.split('+'), 1, {
+    logger: m => {
+      if(m.status === 'recognizing text') setProg(curBase + m.progress*curSpan, `Erkenne Text … ${Math.round(m.progress*100)} %`);
+      else if(m.status && m.status.includes('loading')) setStatus('Lade Sprachdaten … '+(m.progress?Math.round(m.progress*100)+' %':''));
+    }
+  });
+  await worker.setParameters({ tessedit_pageseg_mode: psm, preserve_interword_spaces: '1', user_defined_dpi: '300' });
+  workerKey = key; return worker;
+}
+let curBase = 0, curSpan = 1;
+function setStatus(t){ $('#status').textContent = t; }
+function setProg(p, t){ $('#progWrap').classList.remove('hidden'); $('#prog').style.width = Math.round(p*100)+'%'; if(t) setStatus(t); }
+
+function collectLines(data){
+  if(data.lines && data.lines.length) return data.lines;
+  const out=[]; (data.blocks||[]).forEach(b=>(b.paragraphs||[]).forEach(p=>(p.lines||[]).forEach(l=>out.push(l)))); return out;
+}
+
+/* ====================== Zeilen → Vokabelpaare ====================== */
+function cleanLa(s){
+  return s.replace(/^[\s\d.\-–—•*·|]+(?=[A-Za-zĀāĒēĪīŌōŪū])/, '').replace(/[|_~]+/g,' ').replace(/\s+/g,' ').trim();
+}
+function cleanDe(s){
+  return s.replace(/[|_~]+/g,' ').replace(/\s+/g,' ').replace(/^[\s:=\-–—]+|[\s|]+$/g,'').trim();
+}
+function parseLines(lines){
+  // 1) Jede Zeile in Wörter mit Position zerlegen
+  const rows = [];
+  for(const l of lines){
+    const words = (l.words||[]).filter(w=>w.text && w.text.trim() && (w.confidence===undefined || w.confidence>15))
+      .map(w=>({t:w.text.trim(), x0:w.bbox.x0, x1:w.bbox.x1}))
+      .sort((a,b)=>a.x0-b.x0);
+    if(!words.length) continue;
+    rows.push({words, y:(l.bbox.y0+l.bbox.y1)/2, x0:words[0].x0});
+  }
+  if(!rows.length) return {pairs:[],dropped:0};
+
+  // Durchschnittliche Zeichenbreite
+  const cw = median(rows.flatMap(r=>r.words.filter(w=>w.t.length>2).map(w=>(w.x1-w.x0)/w.t.length))) || 14;
+
+  // 2) Größte Lücke je Zeile als Spaltentrenner
+  for(const r of rows){
+    let best=-1, gap=0;
+    for(let i=1;i<r.words.length;i++){ const g=r.words[i].x0-r.words[i-1].x1; if(g>gap){gap=g;best=i;} }
+    r.gap = gap; r.split = (best>0 && gap > cw*2.6) ? best : -1;
+  }
+  // Typische Startposition der Übersetzungsspalte
+  const rightStarts = rows.filter(r=>r.split>0).map(r=>r.words[r.split].x0);
+  const rightX = median(rightStarts);
+  const leftX = median(rows.filter(r=>r.split>0).map(r=>r.x0));
+
+  // 3) Paare bilden
+  const pairs=[]; let dropped=0;
+  for(const r of rows){
+    const text = r.words.map(w=>w.t).join(' ');
+    if(r.split>0){
+      const la = cleanLa(r.words.slice(0,r.split).map(w=>w.t).join(' '));
+      const de = cleanDe(r.words.slice(r.split).map(w=>w.t).join(' '));
+      if(la && de) pairs.push({la,de}); else dropped++;
+      continue;
+    }
+    // Fortsetzungszeile? (beginnt in der Übersetzungsspalte)
+    if(rightStarts.length>2 && pairs.length && r.x0 >= rightX - cw*2){
+      pairs[pairs.length-1].de = cleanDe(pairs[pairs.length-1].de+' '+text); continue;
+    }
+    // Trenner im Text? (z. B. "amare = lieben")
+    const m = text.split(/\s=\s|\s[–—-]\s|\s*[=:]\s+/);
+    if(m.length>=2){ const la=cleanLa(m[0]), de=cleanDe(m.slice(1).join(' ')); if(la&&de){ pairs.push({la,de}); continue; } }
+    // Fortsetzung der Latein-Spalte? (eingerückt) – sonst Überschrift o. Ä.
+    dropped++;
+  }
+  return {pairs, dropped};
+}
+
+/* ====================== Upload-Ablauf ====================== */
+const drop = $('#drop'), fileInput = $('#file');
+drop.onclick = ()=>fileInput.click();
+drop.onkeydown = e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fileInput.click(); } };
+['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over');}));
+['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over');}));
+drop.addEventListener('drop', e=>{ if(e.dataTransfer.files.length) processFiles([...e.dataTransfer.files]); });
+fileInput.onchange = ()=>{ if(fileInput.files.length) processFiles([...fileInput.files]); fileInput.value=''; };
+window.addEventListener('paste', e=>{ // Screenshot per Strg+V einfügen
+  const fs = [...(e.clipboardData?.files||[])].filter(f=>f.type.startsWith('image/'));
+  if(fs.length && !$('#setup').classList.contains('hidden') && document.activeElement.tagName!=='TEXTAREA') processFiles(fs);
+});
+
+let busy = false;
+async function processFiles(files){
+  files = files.filter(f=>f.type.startsWith('image/'));
+  if(!files.length || busy) return;
+  busy = true; drop.style.pointerEvents='none'; drop.style.opacity='.6';
+  $('#thumbs').innerHTML = '';
+  let totalAdded = 0, totalDropped = 0;
+  try{
+    const worker = await getWorker($('#langs').value, $('#psm').value);
+    for(let i=0;i<files.length;i++){
+      curBase = i/files.length; curSpan = 1/files.length;
+      setProg(curBase, `Bereite Bild ${i+1}/${files.length} vor …`);
+      const canvas = await preprocess(files[i]);
+      const th = new Image(); th.src = URL.createObjectURL(files[i]); $('#thumbs').appendChild(th);
+      const { data } = await worker.recognize(canvas);
+      const { pairs, dropped } = parseLines(collectLines(data));
+      pairs.forEach(p=>vocab.push({id:uid(), la:p.la, de:p.de}));
+      totalAdded += pairs.length; totalDropped += dropped;
+      save(); renderTable();
+    }
+    setProg(1);
+    if(totalAdded) setStatus(`✓ ${totalAdded} Vokabeln erkannt${totalDropped?` (${totalDropped} Zeilen ohne Übersetzung ignoriert, z. B. Überschriften)`:''}. Bitte unten kurz prüfen.`);
+    else setStatus('Es wurden keine Vokabelpaare erkannt. Probiere ein schärferes, gerades Foto oder ein anderes Seitenlayout in den Einstellungen.');
+    if(totalAdded) $('#tbody').closest('.card').scrollIntoView({behavior:'smooth',block:'start'});
+  }catch(err){
+    console.error(err);
+    setStatus('Fehler bei der Erkennung: '+(err && err.message ? err.message : err)+' (Internetverbindung nötig fürs erste Laden der Sprachdaten.)');
+    worker = null;
+  }finally{
+    busy = false; drop.style.pointerEvents=''; drop.style.opacity='';
+    setTimeout(()=>$('#progWrap').classList.add('hidden'), 1200);
+  }
+}
+
+/* ====================== Antwort-Vergleich ====================== */
+function norm(s){
+  return s.toLowerCase().replace(/ß/g,'ss').normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+    .replace(/[^a-z0-9\s]/g,' ').replace(/\s+/g,' ').trim();
+}
+function lev(a,b){
+  if(a===b) return 0; if(!a.length) return b.length; if(!b.length) return a.length;
+  let prev = Array.from({length:b.length+1},(_,i)=>i);
+  for(let i=1;i<=a.length;i++){
+    const cur=[i];
+    for(let j=1;j<=b.length;j++) cur[j]=Math.min(prev[j]+1,cur[j-1]+1,prev[j-1]+(a[i-1]===b[j-1]?0:1));
+    prev=cur;
+  }
+  return prev[b.length];
+}
+function close(a,b){
+  if(a===b) return true;
+  const L = Math.max(a.length,b.length);
+  const tol = L>=9 ? 2 : L>=5 ? 1 : 0;
+  return tol>0 && lev(a,b)<=tol;
+}
+function alternatives(text, isLatin){
+  const t = text.replace(/\([^)]*\)|\[[^\]]*\]/g,' ');
+  const parts = isLatin ? [t.split(',')[0], t] : t.split(/[;,\/]| oder /);
+  return [...new Set(parts.map(norm).filter(Boolean))];
+}
+function checkAnswer(user, expected, targetIsLatin){
+  const u = norm(user); if(!u) return false;
+  const exp = alternatives(expected, targetIsLatin);
+  const full = norm(expected.replace(/\([^)]*\)|\[[^\]]*\]/g,' '));
+  if(close(u, full)) return true;
+  const ua = alternatives(user, targetIsLatin);
+  return ua.some(x => exp.some(e => close(x, e)));
+}
+
+/* ====================== Quiz ====================== */
+let Q = null; // {cards, i, wrong, right, total, mode, dir, answered, cur, curDir}
+function show(id){ ['setup','quiz','result'].forEach(s=>$('#'+s).classList.toggle('hidden', s!==id)); window.scrollTo(0,0); }
+
+function startQuiz(cards, opts){
+  Q = { cards: shuffle(cards), i:0, wrong:[], right:0, total:cards.length, mode:opts.mode, dir:opts.dir, answered:false };
+  show('quiz'); nextCard();
+}
+$('#start').onclick = ()=>{
+  const valid = vocab.filter(v=>v.la.trim() && v.de.trim());
+  if(valid.length < 1){ alert('Bitte zuerst Vokabeln hinzufügen (Foto hochladen oder Text einfügen).'); return; }
+  let pool = shuffle(valid);
+  const amt = $('#amount').value; if(amt!=='all') pool = pool.slice(0, +amt);
+  startQuiz(pool, {mode:$('#mode').value, dir:$('#dir').value});
+};
+function nextCard(){
+  if(Q.i >= Q.cards.length) return finish();
+  const c = Q.cards[Q.i]; Q.cur = c; Q.answered = false;
+  Q.curDir = Q.dir==='mix' ? (Math.random()<.5?'la-de':'de-la') : Q.dir;
+  const fromLa = Q.curDir==='la-de';
+  $('#qDir').textContent = fromLa ? 'Latein → Deutsch' : 'Deutsch → Latein';
+  $('#qPrompt').textContent = fromLa ? c.la : c.de;
+  $('#qInfo').textContent = `Karte ${Q.i+1} von ${Q.cards.length} · ✓ ${Q.right} · ✗ ${Q.wrong.length}`;
+  $('#qProg').style.width = (Q.i/Q.cards.length*100)+'%';
+  const fb = $('#feedback'); fb.className='feedback'; fb.innerHTML='';
+  $('#nextArea').classList.add('hidden'); $('#rateArea').classList.add('hidden'); $('#overrideBtn').classList.add('hidden');
+  const typing = Q.mode==='type';
+  $('#typeArea').classList.toggle('hidden', !typing);
+  $('#flipArea').classList.toggle('hidden', typing);
+  if(typing){ const a=$('#answer'); a.value=''; a.disabled=false; a.focus(); }
+  else $('#showBtn').focus();
+}
+function expectedText(){ return Q.curDir==='la-de' ? Q.cur.de : Q.cur.la; }
+
+function judge(correct, userText){
+  Q.answered = true;
+  const fb = $('#feedback');
+  if(correct){ Q.right++; fb.className='feedback ok'; fb.innerHTML = `✓ Richtig! <b>${esc(expectedText())}</b>`; }
+  else{
+    Q.wrong.push(Q.cur); fb.className='feedback bad';
+    fb.innerHTML = `✗ ${userText?'Nicht ganz.':'Gesucht war:'} Richtig wäre: <b>${esc(expectedText())}</b>` +
+      (userText?`<br><span class="muted">Deine Antwort: ${esc(userText)}</span>`:'');
+    $('#overrideBtn').classList.remove('hidden');
+  }
+  $('#answer').disabled = true;
+  $('#nextArea').classList.remove('hidden'); $('#nextBtn').focus();
+  $('#qInfo').textContent = `Karte ${Q.i+1} von ${Q.cards.length} · ✓ ${Q.right} · ✗ ${Q.wrong.length}`;
+}
+function check(){
+  if(Q.answered) return;
+  const val = $('#answer').value;
+  if(!val.trim()){ $('#answer').focus(); return; }
+  judge(checkAnswer(val, expectedText(), Q.curDir==='de-la'), val.trim());
+}
+$('#checkBtn').onclick = check;
+$('#skipBtn').onclick = ()=>{ if(!Q.answered) judge(false,''); };
+$('#answer').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); Q.answered ? advance() : check(); } });
+$('#overrideBtn').onclick = ()=>{
+  const k = Q.wrong.lastIndexOf(Q.cur); if(k>=0) Q.wrong.splice(k,1);
+  Q.right++; $('#feedback').className='feedback ok'; $('#feedback').innerHTML=`✓ Als richtig gewertet: <b>${esc(expectedText())}</b>`;
+  $('#overrideBtn').classList.add('hidden');
+  $('#qInfo').textContent = `Karte ${Q.i+1} von ${Q.cards.length} · ✓ ${Q.right} · ✗ ${Q.wrong.length}`;
+};
+function advance(){ Q.i++; nextCard(); }
+$('#nextBtn').onclick = advance;
+
+// Karteikarten-Modus
+$('#showBtn').onclick = ()=>{
+  const fb = $('#feedback'); fb.className='feedback ok'; fb.style.background='var(--bg)'; fb.style.color='var(--ink)';
+  fb.innerHTML = `<div class="reveal">${esc(expectedText())}</div><span class="muted">Hast du es gewusst?</span>`;
+  $('#flipArea').classList.add('hidden'); $('#rateArea').classList.remove('hidden'); $('#rightBtn').focus();
+};
+function rate(ok){
+  $('#feedback').style.background=''; $('#feedback').style.color='';
+  if(ok) Q.right++; else Q.wrong.push(Q.cur);
+  $('#rateArea').classList.add('hidden'); advance();
+}
+$('#rightBtn').onclick = ()=>rate(true);
+$('#wrongBtn').onclick = ()=>rate(false);
+
+document.addEventListener('keydown', e=>{
+  if($('#quiz').classList.contains('hidden')) return;
+  const tag = document.activeElement.tagName;
+  if(Q.mode==='flip' && tag!=='INPUT'){
+    if(e.key===' '||e.key==='Enter'){ if(!$('#flipArea').classList.contains('hidden')){ e.preventDefault(); $('#showBtn').click(); } }
+    else if(e.key==='ArrowRight' && !$('#rateArea').classList.contains('hidden')) $('#rightBtn').click();
+    else if(e.key==='ArrowLeft' && !$('#rateArea').classList.contains('hidden')) $('#wrongBtn').click();
+  } else if(Q.mode==='type' && Q.answered && e.key==='Enter' && tag!=='BUTTON'){ e.preventDefault(); advance(); }
+});
+
+$('#quitBtn').onclick = ()=>{ if(confirm('Abfrage beenden?')) show('setup'); };
+
+function finish(){
+  show('result');
+  const pct = Math.round(Q.right/Q.total*100);
+  $('#rScore').textContent = `${Q.right} / ${Q.total}`;
+  $('#rText').textContent = `${pct} % richtig` + (pct===100?' – perfekt! 🏛️':pct>=80?' – sehr gut!':pct>=50?' – weiter üben!':' – das wird noch.');
+  const uniq = [...new Set(Q.wrong)];
+  $('#rBad').innerHTML = uniq.length ? `<h2>Nochmal ansehen</h2>` + uniq.map(c=>`<div><b>${esc(c.la)}</b><span>${esc(c.de)}</span></div>`).join('') : '';
+  $('#retryBtn').classList.toggle('hidden', !uniq.length);
+  $('#qProg').style.width='100%';
+}
+$('#retryBtn').onclick = ()=>startQuiz([...new Set(Q.wrong)], {mode:Q.mode, dir:Q.dir});
+$('#againBtn').onclick = ()=>$('#start').click();
+$('#backBtn').onclick = ()=>show('setup');
+
+/* ====================== Start ====================== */
+renderTable();
+</script>
+</body>
+</html>

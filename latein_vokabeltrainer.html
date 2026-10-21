@@ -33,14 +33,9 @@
   button:disabled{opacity:.45;cursor:not-allowed}
   button.danger{color:var(--bad)}
   .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
-  .drop{border:2px dashed var(--line);border-radius:var(--radius);padding:26px 16px;text-align:center;cursor:pointer;transition:.15s}
-  .drop:hover,.drop.over{border-color:var(--accent);background:color-mix(in srgb,var(--card) 94%,var(--accent))}
-  .drop strong{display:block;font-size:1.05rem;margin-bottom:4px}
   .progress{height:8px;background:var(--line);border-radius:99px;overflow:hidden;margin-top:12px}
   .progress>div{height:100%;width:0;background:var(--accent);transition:width .25s}
   .status{margin-top:8px;font-size:.92rem;min-height:1.3em}
-  .thumbs{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-  .thumbs img{height:64px;border-radius:8px;border:1px solid var(--line)}
   table{width:100%;border-collapse:collapse}
   th{text-align:left;font-size:.8rem;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);padding:4px 6px}
   td{padding:3px 4px}
@@ -85,41 +80,8 @@
   <!-- ================= SETUP ================= -->
   <section id="setup">
     <div class="card">
-      <h2>1 · Foto der Vokabelseite hochladen</h2>
-      <div class="drop" id="drop" tabindex="0">
-        <strong>📷 Foto auswählen, hierher ziehen oder aufnehmen</strong>
-        <span class="muted">Mehrere Seiten sind möglich. Gerade, gut ausgeleuchtet und Latein links, Deutsch rechts, dann klappt es am besten.</span>
-      </div>
-      <input type="file" id="file" accept="image/*" multiple hidden>
-      <div class="thumbs" id="thumbs"></div>
-      <div class="progress hidden" id="progWrap"><div id="prog"></div></div>
-      <div class="status muted" id="status"></div>
-
-      <details style="margin-top:14px">
-        <summary>Erkennungs-Einstellungen</summary>
-        <div class="row">
-          <label class="opt">Seitenlayout
-            <select id="psm">
-              <option value="6">Tabelle / Vokabelspalten (empfohlen)</option>
-              <option value="4">Einspaltiger Text mit variabler Größe</option>
-              <option value="3">Automatisch</option>
-            </select>
-          </label>
-          <label class="opt">Sprachen für die Erkennung
-            <select id="langs">
-              <option value="lat+deu">Latein + Deutsch (empfohlen)</option>
-              <option value="deu+lat">Deutsch + Latein</option>
-              <option value="deu">Nur Deutsch</option>
-            </select>
-          </label>
-        </div>
-        <p class="muted">Die Texterkennung läuft komplett in deinem Browser, das Foto wird nirgendwo hochgeladen. Beim ersten Mal werden die Sprachdaten (ca. 10–20 MB) geladen, dafür brauchst du Internet.</p>
-      </details>
-    </div>
-
-    <div class="card">
-      <h2>2 · Vokabeln prüfen und korrigieren</h2>
-      <p class="muted" style="margin-top:-6px">Die Erkennung macht gerade bei Längenstrichen (ā, ē) und Sonderzeichen Fehler. Kurz drüberschauen lohnt sich. Du kannst alles direkt bearbeiten.</p>
+      <h2>1 · Vokabeln eingeben</h2>
+      <p class="muted" style="margin-top:-6px">Füge unten eine Liste ein oder tippe die Vokabeln direkt in die Tabelle. Alles lässt sich jederzeit bearbeiten.</p>
       <div class="tablewrap">
         <table>
           <thead><tr><th></th><th>Latein</th><th>Deutsch</th><th></th></tr></thead>
@@ -133,16 +95,17 @@
         <button id="exportBtn">Liste speichern (.txt)</button>
       </div>
 
-      <details style="margin-top:14px">
+      <details open style="margin-top:14px">
         <summary>Vokabeln als Text einfügen</summary>
         <p class="muted">Eine Vokabel pro Zeile, getrennt durch <code>=</code>, <code>;</code>, Tab oder <code> - </code> (z. B. <code>amicus, -i m. = Freund</code>).</p>
-        <textarea id="paste" placeholder="amicus, -i m. = Freund&#10;laudare = loben"></textarea>
+        <textarea id="paste" style="min-height:160px" placeholder="amicus, -i m. = Freund&#10;laudare = loben"></textarea>
         <div class="row" style="margin-top:8px"><button id="pasteBtn">Hinzufügen</button></div>
+        <div class="status muted" id="status"></div>
       </details>
     </div>
 
     <div class="card">
-      <h2>3 · Abfrage starten</h2>
+      <h2>2 · Abfrage starten</h2>
       <div class="row">
         <label class="opt">Richtung
           <select id="dir">
@@ -217,15 +180,15 @@
   </section>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js"></script>
 <script>
 'use strict';
 /* ====================== Hilfsfunktionen ====================== */
 const $ = s => document.querySelector(s);
 const uid = () => Math.random().toString(36).slice(2, 10);
-const median = a => { if(!a.length) return 0; const s=[...a].sort((x,y)=>x-y); const m=s.length>>1; return s.length%2?s[m]:(s[m-1]+s[m])/2; };
 function shuffle(a){ a=[...a]; for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; }
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+function setStatus(t){ $('#status').textContent = t; }
 
 /* ====================== Zustand ====================== */
 const STORE = 'latein-vokabeltrainer-v1';
@@ -251,7 +214,7 @@ function renderTable(focusLast){
       <td><input data-f="la" value="${esc(v.la)}" placeholder="Latein"></td>
       <td><input data-f="de" value="${esc(v.de)}" placeholder="Deutsch"></td>
       <td class="x"><button title="Zeile löschen" data-del>✕</button></td>
-    </tr>`).join('') || `<tr><td colspan="4" class="muted" style="padding:16px;text-align:center">Noch keine Vokabeln. Lade ein Foto hoch oder füge Text ein.</td></tr>`;
+    </tr>`).join('') || `<tr><td colspan="4" class="muted" style="padding:16px;text-align:center">Noch keine Vokabeln. Füge unten eine Liste ein oder tippe sie hier ein.</td></tr>`;
   updateCount();
   if(focusLast){ const ins = tb.querySelectorAll('tr:last-child input'); if(ins[0]) ins[0].focus(); }
 }
@@ -284,164 +247,6 @@ $('#pasteBtn').onclick = ()=>{
   if(added){ $('#paste').value=''; save(); renderTable(); setStatus(`${added} Vokabeln hinzugefügt.`); }
   else alert('Keine passenden Zeilen gefunden. Format: latein = deutsch');
 };
-
-/* ====================== Bild-Vorverarbeitung ====================== */
-async function loadBitmap(file){
-  try { return await createImageBitmap(file, {imageOrientation:'from-image'}); }
-  catch(e){
-    return await new Promise((res,rej)=>{ const img=new Image(); img.onload=()=>res(img); img.onerror=rej; img.src=URL.createObjectURL(file); });
-  }
-}
-async function preprocess(file){
-  const bmp = await loadBitmap(file);
-  const w0 = bmp.width, h0 = bmp.height;
-  const target = 2400;                     // Zielgröße der langen Kante
-  const scale = Math.min(2, target / Math.max(w0,h0));
-  const w = Math.round(w0*scale), h = Math.round(h0*scale);
-  const c = document.createElement('canvas'); c.width=w; c.height=h;
-  const ctx = c.getContext('2d', {willReadFrequently:true});
-  ctx.drawImage(bmp,0,0,w,h);
-  const img = ctx.getImageData(0,0,w,h), d = img.data;
-  // Graustufen + Histogramm
-  const hist = new Uint32Array(256);
-  for(let i=0;i<d.length;i+=4){ const g=(d[i]*0.299+d[i+1]*0.587+d[i+2]*0.114)|0; d[i]=d[i+1]=d[i+2]=g; hist[g]++; }
-  // Kontrast strecken (2%/98% Perzentil)
-  const total = w*h; let acc=0, lo=0, hi=255;
-  for(let i=0;i<256;i++){ acc+=hist[i]; if(acc>=total*0.02){ lo=i; break; } }
-  acc=0; for(let i=255;i>=0;i--){ acc+=hist[i]; if(acc>=total*0.02){ hi=i; break; } }
-  const rng = Math.max(1,hi-lo);
-  for(let i=0;i<d.length;i+=4){ let g=((d[i]-lo)*255/rng); g=g<0?0:g>255?255:g; d[i]=d[i+1]=d[i+2]=g; }
-  ctx.putImageData(img,0,0);
-  return c;
-}
-
-/* ====================== OCR ====================== */
-let worker = null, workerKey = '';
-async function getWorker(langs, psm){
-  const key = langs+'|'+psm;
-  if(worker && workerKey===key) return worker;
-  if(worker){ try{ await worker.terminate(); }catch(e){} worker=null; }
-  setStatus('Lade Texterkennung (beim ersten Mal etwas Geduld) …');
-  worker = await Tesseract.createWorker(langs.split('+'), 1, {
-    logger: m => {
-      if(m.status === 'recognizing text') setProg(curBase + m.progress*curSpan, `Erkenne Text … ${Math.round(m.progress*100)} %`);
-      else if(m.status && m.status.includes('loading')) setStatus('Lade Sprachdaten … '+(m.progress?Math.round(m.progress*100)+' %':''));
-    }
-  });
-  await worker.setParameters({ tessedit_pageseg_mode: psm, preserve_interword_spaces: '1', user_defined_dpi: '300' });
-  workerKey = key; return worker;
-}
-let curBase = 0, curSpan = 1;
-function setStatus(t){ $('#status').textContent = t; }
-function setProg(p, t){ $('#progWrap').classList.remove('hidden'); $('#prog').style.width = Math.round(p*100)+'%'; if(t) setStatus(t); }
-
-function collectLines(data){
-  if(data.lines && data.lines.length) return data.lines;
-  const out=[]; (data.blocks||[]).forEach(b=>(b.paragraphs||[]).forEach(p=>(p.lines||[]).forEach(l=>out.push(l)))); return out;
-}
-
-/* ====================== Zeilen → Vokabelpaare ====================== */
-function cleanLa(s){
-  return s.replace(/^[\s\d.\-–—•*·|]+(?=[A-Za-zĀāĒēĪīŌōŪū])/, '').replace(/[|_~]+/g,' ').replace(/\s+/g,' ').trim();
-}
-function cleanDe(s){
-  return s.replace(/[|_~]+/g,' ').replace(/\s+/g,' ').replace(/^[\s:=\-–—]+|[\s|]+$/g,'').trim();
-}
-function parseLines(lines){
-  // 1) Jede Zeile in Wörter mit Position zerlegen
-  const rows = [];
-  for(const l of lines){
-    const words = (l.words||[]).filter(w=>w.text && w.text.trim() && (w.confidence===undefined || w.confidence>15))
-      .map(w=>({t:w.text.trim(), x0:w.bbox.x0, x1:w.bbox.x1}))
-      .sort((a,b)=>a.x0-b.x0);
-    if(!words.length) continue;
-    rows.push({words, y:(l.bbox.y0+l.bbox.y1)/2, x0:words[0].x0});
-  }
-  if(!rows.length) return {pairs:[],dropped:0};
-
-  // Durchschnittliche Zeichenbreite
-  const cw = median(rows.flatMap(r=>r.words.filter(w=>w.t.length>2).map(w=>(w.x1-w.x0)/w.t.length))) || 14;
-
-  // 2) Größte Lücke je Zeile als Spaltentrenner
-  for(const r of rows){
-    let best=-1, gap=0;
-    for(let i=1;i<r.words.length;i++){ const g=r.words[i].x0-r.words[i-1].x1; if(g>gap){gap=g;best=i;} }
-    r.gap = gap; r.split = (best>0 && gap > cw*2.6) ? best : -1;
-  }
-  // Typische Startposition der Übersetzungsspalte
-  const rightStarts = rows.filter(r=>r.split>0).map(r=>r.words[r.split].x0);
-  const rightX = median(rightStarts);
-  const leftX = median(rows.filter(r=>r.split>0).map(r=>r.x0));
-
-  // 3) Paare bilden
-  const pairs=[]; let dropped=0;
-  for(const r of rows){
-    const text = r.words.map(w=>w.t).join(' ');
-    if(r.split>0){
-      const la = cleanLa(r.words.slice(0,r.split).map(w=>w.t).join(' '));
-      const de = cleanDe(r.words.slice(r.split).map(w=>w.t).join(' '));
-      if(la && de) pairs.push({la,de}); else dropped++;
-      continue;
-    }
-    // Fortsetzungszeile? (beginnt in der Übersetzungsspalte)
-    if(rightStarts.length>2 && pairs.length && r.x0 >= rightX - cw*2){
-      pairs[pairs.length-1].de = cleanDe(pairs[pairs.length-1].de+' '+text); continue;
-    }
-    // Trenner im Text? (z. B. "amare = lieben")
-    const m = text.split(/\s=\s|\s[–—-]\s|\s*[=:]\s+/);
-    if(m.length>=2){ const la=cleanLa(m[0]), de=cleanDe(m.slice(1).join(' ')); if(la&&de){ pairs.push({la,de}); continue; } }
-    // Fortsetzung der Latein-Spalte? (eingerückt) – sonst Überschrift o. Ä.
-    dropped++;
-  }
-  return {pairs, dropped};
-}
-
-/* ====================== Upload-Ablauf ====================== */
-const drop = $('#drop'), fileInput = $('#file');
-drop.onclick = ()=>fileInput.click();
-drop.onkeydown = e=>{ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); fileInput.click(); } };
-['dragenter','dragover'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.add('over');}));
-['dragleave','drop'].forEach(ev=>drop.addEventListener(ev,e=>{e.preventDefault();drop.classList.remove('over');}));
-drop.addEventListener('drop', e=>{ if(e.dataTransfer.files.length) processFiles([...e.dataTransfer.files]); });
-fileInput.onchange = ()=>{ if(fileInput.files.length) processFiles([...fileInput.files]); fileInput.value=''; };
-window.addEventListener('paste', e=>{ // Screenshot per Strg+V einfügen
-  const fs = [...(e.clipboardData?.files||[])].filter(f=>f.type.startsWith('image/'));
-  if(fs.length && !$('#setup').classList.contains('hidden') && document.activeElement.tagName!=='TEXTAREA') processFiles(fs);
-});
-
-let busy = false;
-async function processFiles(files){
-  files = files.filter(f=>f.type.startsWith('image/'));
-  if(!files.length || busy) return;
-  busy = true; drop.style.pointerEvents='none'; drop.style.opacity='.6';
-  $('#thumbs').innerHTML = '';
-  let totalAdded = 0, totalDropped = 0;
-  try{
-    const worker = await getWorker($('#langs').value, $('#psm').value);
-    for(let i=0;i<files.length;i++){
-      curBase = i/files.length; curSpan = 1/files.length;
-      setProg(curBase, `Bereite Bild ${i+1}/${files.length} vor …`);
-      const canvas = await preprocess(files[i]);
-      const th = new Image(); th.src = URL.createObjectURL(files[i]); $('#thumbs').appendChild(th);
-      const { data } = await worker.recognize(canvas);
-      const { pairs, dropped } = parseLines(collectLines(data));
-      pairs.forEach(p=>vocab.push({id:uid(), la:p.la, de:p.de}));
-      totalAdded += pairs.length; totalDropped += dropped;
-      save(); renderTable();
-    }
-    setProg(1);
-    if(totalAdded) setStatus(`✓ ${totalAdded} Vokabeln erkannt${totalDropped?` (${totalDropped} Zeilen ohne Übersetzung ignoriert, z. B. Überschriften)`:''}. Bitte unten kurz prüfen.`);
-    else setStatus('Es wurden keine Vokabelpaare erkannt. Probiere ein schärferes, gerades Foto oder ein anderes Seitenlayout in den Einstellungen.');
-    if(totalAdded) $('#tbody').closest('.card').scrollIntoView({behavior:'smooth',block:'start'});
-  }catch(err){
-    console.error(err);
-    setStatus('Fehler bei der Erkennung: '+(err && err.message ? err.message : err)+' (Internetverbindung nötig fürs erste Laden der Sprachdaten.)');
-    worker = null;
-  }finally{
-    busy = false; drop.style.pointerEvents=''; drop.style.opacity='';
-    setTimeout(()=>$('#progWrap').classList.add('hidden'), 1200);
-  }
-}
 
 /* ====================== Antwort-Vergleich ====================== */
 function norm(s){
@@ -488,7 +293,7 @@ function startQuiz(cards, opts){
 }
 $('#start').onclick = ()=>{
   const valid = vocab.filter(v=>v.la.trim() && v.de.trim());
-  if(valid.length < 1){ alert('Bitte zuerst Vokabeln hinzufügen (Foto hochladen oder Text einfügen).'); return; }
+  if(valid.length < 1){ alert('Bitte zuerst Vokabeln hinzufügen (Text einfügen oder in die Tabelle tippen).'); return; }
   let pool = shuffle(valid);
   const amt = $('#amount').value; if(amt!=='all') pool = pool.slice(0, +amt);
   startQuiz(pool, {mode:$('#mode').value, dir:$('#dir').value});

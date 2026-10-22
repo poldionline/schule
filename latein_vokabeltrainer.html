@@ -7,12 +7,12 @@
 <style>
   :root{
     --bg:#f6f4ef; --card:#ffffff; --ink:#1e1d1a; --muted:#6c685f; --line:#e2ded3;
-    --accent:#8c2f39; --accent-ink:#fff; --ok:#2f7d4f; --ok-bg:#e4f3ea; --bad:#b3261e; --bad-bg:#fbe6e4;
+    --accent:#8c2f39; --accent-ink:#fff; --ok:#2f7d4f; --ok-bg:#e4f3ea; --bad:#b3261e; --bad-bg:#fbe6e4; --warn:#8a5a00; --warn-bg:#fdf0c9;
     --radius:14px; --shadow:0 1px 2px rgba(0,0,0,.05),0 6px 20px rgba(0,0,0,.05);
   }
   @media (prefers-color-scheme:dark){
     :root{ --bg:#17161a; --card:#222126; --ink:#f0eee8; --muted:#a09c93; --line:#37353c;
-      --accent:#d56b76; --accent-ink:#1a1214; --ok:#6fcf97; --ok-bg:#1d3326; --bad:#ff8a80; --bad-bg:#3b1f1e;
+      --accent:#d56b76; --accent-ink:#1a1214; --ok:#6fcf97; --ok-bg:#1d3326; --bad:#ff8a80; --bad-bg:#3b1f1e; --warn:#f2c14e; --warn-bg:#3a2f10;
       --shadow:0 1px 2px rgba(0,0,0,.4),0 6px 20px rgba(0,0,0,.3);}
   }
   *{box-sizing:border-box}
@@ -72,6 +72,8 @@
   .feedback.ok{display:block;background:var(--ok-bg);color:var(--ok);animation:fbIn .35s ease both}
   .feedback.bad{display:block;background:var(--bad-bg);color:var(--bad);animation:fbIn .35s ease both}
   .feedback.neutral{display:block;background:var(--bg);color:var(--ink);animation:fbIn .35s ease both}
+  .feedback.warn{display:block;background:var(--warn-bg);color:var(--warn);animation:fbIn .35s ease both}
+  .feedback.warn .fbtitle{color:var(--warn)}
   .feedback b{color:var(--ink)}
   .fbtitle{font-weight:700;font-size:1.05rem;margin-bottom:6px}
   .fbline{font-size:.92rem;margin-top:6px;color:var(--ink)}
@@ -80,7 +82,20 @@
   .chip.ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok)}
   .chip.bad{background:var(--bad-bg);color:var(--bad);border-color:var(--bad);text-decoration:line-through}
   .chip.dup{background:var(--bad-bg);color:var(--bad);border-color:var(--bad)}
-  .chip.miss{border-style:dashed;color:var(--muted);background:transparent}
+  .chip.miss{border:1px dashed var(--warn);color:var(--warn);background:var(--warn-bg)}
+  .ref{line-height:2.2;margin:6px 0 2px}
+  .ref span{padding:2px 7px;border-radius:7px;margin:0 1px;display:inline-block}
+  .ref .ok{background:var(--ok-bg);color:var(--ok)}
+  .ref .miss{background:var(--warn-bg);color:var(--warn);font-weight:600}
+  .prompt.long{font-size:clamp(1.2rem,4vw,1.65rem);line-height:1.5}
+  .reveal.long{font-size:1.1rem;line-height:1.5}
+  textarea.answer{max-width:640px;min-height:90px;text-align:left;resize:vertical}
+  td textarea{min-height:60px;width:100%;resize:vertical}
+  .warnrow{border-left:4px solid var(--warn);padding-left:10px}
+  .tabs{display:flex;gap:6px;margin-bottom:16px;border-bottom:1px solid var(--line)}
+  .tabs button{border:none;border-bottom:3px solid transparent;border-radius:10px 10px 0 0;background:none;padding:10px 18px;font-weight:600;color:var(--muted)}
+  .tabs button:hover{background:none;color:var(--ink)}
+  .tabs button.on{color:var(--accent);border-bottom-color:var(--accent)}
   .reveal{font-size:1.4rem;margin:8px 0 6px;font-family:Georgia,serif}
   .actions{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
   .score{font-size:3.2rem;font-family:Georgia,serif;margin:6px 0}
@@ -100,9 +115,11 @@
   @keyframes bounce{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.15);opacity:1}100%{transform:scale(1)}}
   section.enter{animation:cardIn .38s ease both}
   .anim-in{animation:cardIn .35s ease both}
-  .anim-shake{animation:shake .55s both}
+  .anim-shake{animation:shake .55s both, glowBad .75s ease-out}
   .anim-ok{animation:glowOk .75s ease-out}
   .anim-bad{animation:glowBad .75s ease-out}
+  @keyframes glowWarn{0%{box-shadow:0 0 0 0 rgba(224,170,40,.65)}100%{box-shadow:0 0 0 30px rgba(224,170,40,0)}}
+  .anim-warn{animation:glowWarn .75s ease-out}
   .anim-bump{animation:bump .4s ease}
   .anim-bounce{animation:bounce .6s cubic-bezier(.3,1.5,.5,1) both}
   @media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
@@ -119,6 +136,11 @@
       <button class="icon" id="muteBtn" title="Ton an/aus" aria-label="Ton an/aus">🔊</button>
     </div>
   </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="setup" class="on">Vokabeln</button>
+    <button data-tab="tsetup">Texte / Sätze</button>
+  </nav>
 
   <!-- ================= SETUP ================= -->
   <section id="setup">
@@ -140,7 +162,7 @@
 
       <details open style="margin-top:14px">
         <summary>Vokabeln als Text einfügen</summary>
-        <p class="muted">Eine Vokabel pro Zeile: <code>latein = deutsch</code> (auch Tab oder <code> - </code> als Trenner). Mehrere deutsche Bedeutungen mit Komma oder Semikolon trennen. In der Abfrage müssen <b>alle</b> Bedeutungen genannt werden.</p>
+        <p class="muted">Eine Vokabel pro Zeile: <code>latein = deutsch</code> (auch Tab oder <code> - </code> als Trenner). Mehrere deutsche Bedeutungen mit Komma oder Semikolon trennen. Eine falsche Bedeutung macht die Antwort falsch. Fehlen nur Bedeutungen, zählt sie als richtig und wird gelb vermerkt.</p>
         <textarea id="paste" style="min-height:160px" placeholder="amicus, -i m. = Freund&#10;fanum, -i = Heiligtum, Tempel"></textarea>
         <div class="row" style="margin-top:8px"><button id="pasteBtn">Hinzufügen</button></div>
         <div class="status muted" id="status"></div>
@@ -174,6 +196,59 @@
     </div>
   </section>
 
+  <!-- ================= TEXTE ================= -->
+  <section id="tsetup" class="hidden">
+    <div class="card">
+      <h2>1 · Texte / Sätze eingeben</h2>
+      <p class="muted" style="margin-top:-6px">Lateinische Sätze oder Textstellen mit deutscher Übersetzung. In der Abfrage tippst du die Übersetzung ein. Die Wörter werden verglichen und Abweichungen markiert.</p>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th></th><th>Lateinischer Text</th><th>Übersetzung</th><th></th></tr></thead>
+          <tbody id="ttbody"></tbody>
+        </table>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button id="taddRow">＋ Zeile</button>
+        <button id="tclearAll" class="danger">Alle löschen</button>
+        <span style="flex:1"></span>
+        <button id="texportBtn">Liste speichern (.txt)</button>
+      </div>
+      <details open style="margin-top:14px">
+        <summary>Texte als Liste einfügen</summary>
+        <p class="muted">Ein Satz pro Zeile: <code>lateinischer Satz = deutsche Übersetzung</code> (oder Tab als Trenner).</p>
+        <textarea id="tpaste" style="min-height:140px" placeholder="Domus vacua est. = Das Haus ist leer.&#10;Signum erat marmoreum. = Die Statue war aus Marmor."></textarea>
+        <div class="row" style="margin-top:8px"><button id="tpasteBtn">Hinzufügen</button></div>
+        <div class="status muted" id="tstatus"></div>
+      </details>
+    </div>
+
+    <div class="card">
+      <h2>2 · Abfrage starten</h2>
+      <div class="row">
+        <label class="opt">Richtung
+          <select id="tdir">
+            <option value="la-de">Latein → Deutsch</option>
+            <option value="de-la">Deutsch → Latein</option>
+            <option value="mix">Gemischt</option>
+          </select>
+        </label>
+        <label class="opt">Art der Abfrage
+          <select id="tmode">
+            <option value="type">Eintippen (Wörter vergleichen)</option>
+            <option value="flip">Karteikarten (selbst bewerten)</option>
+          </select>
+        </label>
+        <label class="opt">Anzahl
+          <select id="tamount"></select>
+        </label>
+      </div>
+      <label class="check"><input type="checkbox" id="ttypo" checked> Kleine Tippfehler tolerieren</label>
+      <div class="row" style="margin-top:14px">
+        <button class="primary" id="tstart" style="padding:12px 26px;font-size:1.05rem">▶ Abfrage starten</button>
+      </div>
+    </div>
+  </section>
+
   <!-- ================= QUIZ ================= -->
   <section id="quiz" class="hidden">
     <div class="quiz-top">
@@ -189,6 +264,7 @@
 
       <div id="typeArea">
         <input class="answer" id="answer" type="text" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Antwort eingeben …">
+        <textarea class="answer hidden" id="answerT" rows="3" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="Übersetzung eingeben …"></textarea>
         <div class="hint" id="hint"></div>
         <div class="actions"><button class="primary" id="checkBtn">Prüfen ↵</button><button id="skipBtn">Weiß ich nicht</button></div>
       </div>
@@ -204,6 +280,7 @@
         <button id="rightBtn" class="primary">✓ Gewusst</button>
       </div>
       <div class="actions hidden" id="nextArea">
+        <button id="overrideBtn" class="hidden">✓ Trotzdem gelten</button>
         <button class="primary" id="nextBtn">Weiter ↵</button>
       </div>
     </div>
@@ -216,6 +293,7 @@
       <div class="score" id="rScore"></div>
       <div class="muted" id="rText"></div>
       <div class="badlist" id="rBad"></div>
+      <div class="badlist" id="rWarn"></div>
       <div class="actions" style="margin-top:24px">
         <button class="primary" id="retryBtn">Nur die falschen nochmal</button>
         <button id="againBtn">Neue Runde (alle)</button>
@@ -234,7 +312,8 @@ function shuffle(a){ a=[...a]; for(let i=a.length-1;i>0;i--){ const j=Math.floor
 function esc(s){ return String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 function setStatus(t){ $('#status').textContent = t; }
 const reduced = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
-function anim(el, cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+function anim(el, cls){ [...el.classList].forEach(c=>{ if(c===cls || c.startsWith('anim-')) el.classList.remove(c); }); void el.offsetWidth; el.classList.add(cls); }
+const A = ()=> (Q && Q.kind==='text') ? $('#answerT') : $('#answer');
 
 /* ====================== Sound (WebAudio, keine Dateien nötig) ====================== */
 let actx = null, muted = false;
@@ -260,6 +339,7 @@ const SFX = {
   next(){ tone(480,0,.07,'sine',.07,760); },
   start(){ [392,523,659,784].forEach((f,i)=>tone(f,i*.07,.2,'triangle',.13)); },
   flip(){ tone(320,0,.09,'sine',.08,640); },
+  warn(){ tone(523,0,.14,'triangle',.13); tone(466,.13,.26,'triangle',.11); },
   streak(n){ const b = 660 + Math.min(n,15)*22; [0,.08,.16].forEach((d,i)=>tone(b*(1+i*.25),d,.16,'sine',.09)); },
   fin(pct){
     if(pct>=80){ [523,659,784,1047,784,1047,1319].forEach((f,i)=>tone(f,i*.11,.26,'triangle',.14)); }
@@ -357,6 +437,66 @@ $('#pasteBtn').onclick = ()=>{
   else alert('Keine passenden Zeilen gefunden. Format: latein = deutsch');
 };
 
+/* ====================== Texte / Sätze (Liste) ====================== */
+const TSTORE = 'latein-texte-v1';
+let texts = [];
+try { texts = JSON.parse(localStorage.getItem(TSTORE) || '[]'); } catch(e){ texts = []; }
+const tsave = () => { try{ localStorage.setItem(TSTORE, JSON.stringify(texts)); }catch(e){} updateTCount(); };
+function updateTCount(){
+  const n = texts.filter(v=>v.la.trim()&&v.de.trim()).length;
+  const sel = $('#tamount'), old = sel.value;
+  const opts = [['all','Alle ('+n+')']];
+  [5,10,20].forEach(k=>{ if(n>k) opts.push([k,k+' zufällige']); });
+  sel.innerHTML = opts.map(o=>`<option value="${o[0]}">${o[1]}</option>`).join('');
+  if([...sel.options].some(o=>o.value===old)) sel.value = old;
+}
+function renderTTable(focusLast){
+  const tb = $('#ttbody');
+  tb.innerHTML = texts.map((v,i)=>`
+    <tr data-id="${v.id}">
+      <td class="n">${i+1}</td>
+      <td><textarea data-f="la" rows="2" placeholder="Lateinischer Text">${esc(v.la)}</textarea></td>
+      <td><textarea data-f="de" rows="2" placeholder="Deutsche Übersetzung">${esc(v.de)}</textarea></td>
+      <td class="x"><button title="Zeile löschen" data-del>✕</button></td>
+    </tr>`).join('') || `<tr><td colspan="4" class="muted" style="padding:16px;text-align:center">Noch keine Texte. Füge unten eine Liste ein oder tippe sie hier ein.</td></tr>`;
+  updateTCount();
+  if(focusLast){ const ins = tb.querySelectorAll('tr:last-child textarea'); if(ins[0]) ins[0].focus(); }
+}
+$('#ttbody').addEventListener('input', e=>{
+  const tr = e.target.closest('tr'); if(!tr) return;
+  const v = texts.find(x=>x.id===tr.dataset.id); if(!v) return;
+  v[e.target.dataset.f] = e.target.value; tsave();
+});
+$('#ttbody').addEventListener('click', e=>{
+  if(!e.target.closest('[data-del]')) return;
+  const id = e.target.closest('tr').dataset.id;
+  texts = texts.filter(x=>x.id!==id); tsave(); renderTTable();
+});
+$('#taddRow').onclick = ()=>{ texts.push({id:uid(),la:'',de:''}); tsave(); renderTTable(true); };
+$('#tclearAll').onclick = ()=>{ if(texts.length && confirm('Wirklich alle Texte löschen?')){ texts=[]; tsave(); renderTTable(); } };
+$('#texportBtn').onclick = ()=>{
+  const txt = texts.filter(v=>v.la||v.de).map(v=>`${v.la} = ${v.de}`).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));
+  a.download = 'latein-texte.txt'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
+};
+$('#tpasteBtn').onclick = ()=>{
+  let added = 0;
+  for(const raw of $('#tpaste').value.split(/\r?\n/)){
+    const m = raw.trim().match(/^(.*?)(?:\t|\s*=\s*)(.+)$/);
+    if(m && m[1].trim() && m[2].trim()){ texts.push({id:uid(), la:m[1].trim(), de:m[2].trim()}); added++; }
+  }
+  if(added){ $('#tpaste').value=''; tsave(); renderTTable(); $('#tstatus').textContent = `✓ ${added} Texte hinzugefügt.`; }
+  else alert('Keine passenden Zeilen gefunden. Format: lateinischer Satz = deutsche Übersetzung');
+};
+$('#tstart').onclick = ()=>{
+  const valid = texts.filter(v=>v.la.trim() && v.de.trim());
+  if(valid.length < 1){ alert('Bitte zuerst Texte hinzufügen.'); return; }
+  let pool = shuffle(valid);
+  const amt = $('#tamount').value; if(amt!=='all') pool = pool.slice(0, +amt);
+  startQuiz(pool, {mode:$('#tmode').value, dir:$('#tdir').value, typo:$('#ttypo').checked, kind:'text'});
+};
+
 /* ====================== Strenge Antwortprüfung ====================== */
 const stripPar = s => s.replace(/\([^)]*\)|\[[^\]]*\]/g,' ');
 
@@ -398,7 +538,7 @@ function checkDe(user, expected, typoOk){
   const hits = items.filter(i=>i.state==='ok').length;
   const wrong = items.length - hits;
   const missing = exp.length - hits;
-  return {kind:'de', ok: wrong===0 && missing===0, items, hits, wrong, missing, total: exp.length};
+  return {kind:'de', ok: wrong===0 && missing===0, warn: wrong===0 && hits>0 && missing>0, items, hits, wrong, missing, total: exp.length};
 }
 /* Deutsch → Latein: Grundform (oder komplette Angabe) muss stimmen */
 function checkLa(user, expected, typoOk){
@@ -414,13 +554,38 @@ function checkLa(user, expected, typoOk){
   return {kind:'la', ok};
 }
 
+/* Texte: Wortvergleich (Reihenfolge egal), Tippfehler optional */
+function checkText(user, expected, expectedIsLatin, typoOk){
+  const norm = expectedIsLatin ? normLa : normDe;
+  const refWords = expected.split(/\s+/).filter(Boolean).map(t=>({t, n:norm(t).replace(/-/g,'')}));
+  const uTok = norm(user).split(' ').map(x=>x.replace(/-/g,'')).filter(Boolean);
+  const used = new Array(uTok.length).fill(false);
+  let hits = 0, counted = 0;
+  const ref = refWords.map(w=>{
+    if(!w.n) return {t:w.t, hit:true};            // reine Satzzeichen
+    counted++;
+    let idx = uTok.findIndex((u,i)=>!used[i] && u===w.n);
+    if(idx<0 && typoOk) idx = uTok.findIndex((u,i)=>!used[i] && typoClose(u,w.n));
+    if(idx>=0){ used[idx]=true; hits++; return {t:w.t, hit:true}; }
+    return {t:w.t, hit:false};
+  });
+  const cov = counted ? hits/counted : 0;
+  const prec = uTok.length ? hits/uTok.length : 0;
+  const f = (cov+prec)>0 ? 2*cov*prec/(cov+prec) : 0;
+  return {kind:'text', ok: f>=0.85, warn: f>=0.5 && f<0.85, ref, pct: Math.round(f*100), hits, total: counted};
+}
+
 /* ====================== Quiz ====================== */
 let Q = null;
 function show(id){
-  ['setup','quiz','result'].forEach(s=>$('#'+s).classList.toggle('hidden', s!==id));
+  ['setup','tsetup','quiz','result'].forEach(s=>$('#'+s).classList.toggle('hidden', s!==id));
+  const isSetup = id==='setup' || id==='tsetup';
+  $('#tabs').classList.toggle('hidden', !isSetup);
+  if(isSetup) document.querySelectorAll('#tabs button').forEach(b=>b.classList.toggle('on', b.dataset.tab===id));
   const el = $('#'+id); anim(el,'enter'); window.scrollTo(0,0);
 }
-function info(){ $('#qInfo').textContent = `Karte ${Math.min(Q.i+1,Q.cards.length)} von ${Q.cards.length} · ✓ ${Q.right} · ✗ ${Q.wrong.length}`; }
+document.querySelectorAll('#tabs button').forEach(b=>b.onclick = ()=>show(b.dataset.tab));
+function info(){ $('#qInfo').textContent = `Karte ${Math.min(Q.i+1,Q.cards.length)} von ${Q.cards.length} · ✓ ${Q.right} · ✗ ${Q.wrong.length}${Q.partial.length?` · ⚠ ${Q.partial.length}`:''}`; }
 function showStreak(bump){
   const el = $('#streak');
   el.textContent = Q.streak>=2 ? `🔥 ${Q.streak}` : '';
@@ -428,7 +593,7 @@ function showStreak(bump){
 }
 
 function startQuiz(cards, opts){
-  Q = { cards: shuffle(cards), i:0, wrong:[], right:0, total:cards.length, mode:opts.mode, dir:opts.dir, typo:opts.typo, streak:0, answered:false };
+  Q = { cards: shuffle(cards), i:0, wrong:[], right:0, total:cards.length, mode:opts.mode, dir:opts.dir, typo:opts.typo, kind:opts.kind||'vocab', partial:[], forced:0, state:'', streak:0, answered:false };
   ac(); SFX.start(); show('quiz'); showStreak(); nextCard();
 }
 $('#start').onclick = ()=>{
@@ -436,7 +601,7 @@ $('#start').onclick = ()=>{
   if(valid.length < 1){ alert('Bitte zuerst Vokabeln hinzufügen (Text einfügen oder in die Tabelle tippen).'); return; }
   let pool = shuffle(valid);
   const amt = $('#amount').value; if(amt!=='all') pool = pool.slice(0, +amt);
-  startQuiz(pool, {mode:$('#mode').value, dir:$('#dir').value, typo:$('#typo').checked});
+  startQuiz(pool, {mode:$('#mode').value, dir:$('#dir').value, typo:$('#typo').checked, kind:'vocab'});
 };
 
 function expectedText(){ return Q.curDir==='la-de' ? Q.cur.de : Q.cur.la; }
@@ -455,14 +620,23 @@ function nextCard(){
   const typing = Q.mode==='type';
   $('#typeArea').classList.toggle('hidden', !typing);
   $('#flipArea').classList.toggle('hidden', typing);
+  $('#answer').classList.toggle('hidden', Q.kind==='text');
+  $('#answerT').classList.toggle('hidden', Q.kind!=='text');
+  $('#overrideBtn').classList.add('hidden');
+  $('#qPrompt').classList.toggle('long', Q.kind==='text');
   anim($('#qcard'),'anim-in');
-  if(typing){ const a=$('#answer'); a.value=''; a.disabled=false; updateHint(); a.focus(); }
+  if(typing){ const a=A(); a.value=''; a.disabled=false; updateHint(); a.focus(); }
   else $('#showBtn').focus();
 }
 
 /* Live-Anzeige: wie viele Bedeutungen sind noch offen (nach Anzahl der eingegebenen Einträge) */
 function updateHint(){
   const h = $('#hint');
+  if(Q.kind==='text'){
+    const n = A().value.trim().split(/\s+/).filter(Boolean).length;
+    h.innerHTML = `Übersetze den ganzen Satz · <b>${n}</b> ${n===1?'Wort':'Wörter'} geschrieben <span class="muted">(Enter = prüfen, Shift+Enter = neue Zeile)</span>`;
+    return;
+  }
   if(Q.curDir==='de-la'){
     h.innerHTML = 'Gesucht: das lateinische Wort <span class="muted">(die Grundform genügt, z. B. <i>amicus</i>)</span>';
     return;
@@ -478,6 +652,7 @@ function updateHint(){
   h.innerHTML = `<div class="dots">${dots}</div>${txt}`;
 }
 $('#answer').addEventListener('input', updateHint);
+$('#answerT').addEventListener('input', updateHint);
 
 function renderChips(res){
   const parts = res.items.map((it,i)=>`<span class="chip ${it.state}" style="animation-delay:${i*90}ms">${it.state==='ok'?'✓ ':it.state==='dup'?'2× ':'✗ '}${esc(it.raw)}</span>`);
@@ -485,60 +660,89 @@ function renderChips(res){
   return `<div class="chips">${parts.join('')}</div>`;
 }
 
+function refHtml(res){
+  return `<div class="ref">${res.ref.map(w=>`<span class="${w.hit?'ok':'miss'}">${esc(w.t)}</span>`).join(' ')}</div>`;
+}
 function judge(res, userText){
-  Q.answered = true;
-  const fb = $('#feedback'), card = $('#qcard');
-  const exp = expectedText();
+  Q.answered = true; Q.state = 'bad';
+  const fb = $('#feedback'), card = $('#qcard'), exp = expectedText();
+  const forceBtn = $('#overrideBtn'); forceBtn.classList.add('hidden');
+  const mine = userText ? `<div class="fbline">Deine Antwort: <i>${esc(userText)}</i></div>` : '';
   if(res.ok){
-    Q.right++; Q.streak++;
+    Q.state = 'ok'; Q.right++; Q.streak++;
     fb.className = 'feedback ok';
-    fb.innerHTML = res.kind==='de'
-      ? `<div class="fbtitle">✓ Richtig – ${res.total===1?'die Bedeutung':'alle '+res.total+' Bedeutungen'}!</div>${renderChips(res)}`
-      : `<div class="fbtitle">✓ Richtig!</div><div class="fbline"><b>${esc(exp)}</b></div>`;
+    if(res.kind==='de') fb.innerHTML = `<div class="fbtitle">✓ Richtig – ${res.total===1?'die Bedeutung':'alle '+res.total+' Bedeutungen'}!</div>${renderChips(res)}`;
+    else if(res.kind==='text') fb.innerHTML = `<div class="fbtitle">✓ Richtig übersetzt! (${res.pct} % Übereinstimmung)</div>${refHtml(res)}`;
+    else fb.innerHTML = `<div class="fbtitle">✓ Richtig!</div><div class="fbline"><b>${esc(exp)}</b></div>`;
     SFX.ok(); anim(card,'anim-ok');
     if(Q.streak>=3 && Q.streak%3===0) setTimeout(()=>SFX.streak(Q.streak), 380);
+  } else if(res.warn){
+    Q.state = 'warn'; Q.right++; Q.streak++; Q.partial.push({card:Q.cur});
+    fb.className = 'feedback warn';
+    if(res.kind==='de'){
+      fb.innerHTML = `<div class="fbtitle">⚠ Gewertet, aber unvollständig – es ${res.missing===1?'fehlt':'fehlen'} noch ${res.missing} von ${res.total} ${res.total===1?'Bedeutung':'Bedeutungen'}</div>${renderChips(res)}<div class="fbline">Das ist kein Fehler, nur vermerkt. Vollständig: <b>${esc(exp)}</b></div>`;
+    } else {
+      fb.innerHTML = `<div class="fbtitle">⚠ Gewertet – die Übersetzung weicht teilweise ab (${res.pct} % Übereinstimmung)</div>${refHtml(res)}${mine}<div class="fbline">Gelb = fehlt in deiner Antwort. Das ist kein Fehler, nur vermerkt.</div>`;
+    }
+    SFX.warn(); anim(card,'anim-warn');
   } else {
     Q.wrong.push(Q.cur); Q.streak = 0;
     fb.className = 'feedback bad';
     if(res.kind==='de'){
       let title;
       if(!userText) title = '✗ Nicht gewusst';
-      else if(res.wrong>0) title = `✗ Falsch – eine falsche Bedeutung macht die ganze Antwort falsch`;
-      else title = `✗ Unvollständig – es ${res.missing===1?'fehlt':'fehlen'} noch ${res.missing} von ${res.total} ${res.total===1?'Bedeutung':'Bedeutungen'}`;
+      else if(res.wrong>0) title = '✗ Falsch – eine falsche Bedeutung macht die ganze Antwort falsch';
+      else title = '✗ Keine Bedeutung erkannt';
       const stats = userText ? `<div class="fbline">Richtig: <b>${res.hits}</b> von ${res.total} · Falsch: <b>${res.wrong}</b> · Es ${res.missing===1?'fehlt':'fehlen'} noch: <b>${res.missing}</b></div>` : '';
       fb.innerHTML = `<div class="fbtitle">${title}</div>${userText?renderChips(res):''}${stats}<div class="fbline">Vollständig richtig wäre: <b>${esc(exp)}</b></div>`;
+    } else if(res.kind==='text'){
+      fb.innerHTML = `<div class="fbtitle">${userText?'✗ Falsch – nur '+res.pct+' % Übereinstimmung':'✗ Nicht gewusst'}</div>${mine}<div class="fbline">Richtig wäre (gelb = fehlt bei dir):</div>${refHtml(res)}`;
     } else {
       fb.innerHTML = `<div class="fbtitle">${userText?'✗ Falsch':'✗ Nicht gewusst'}</div>` +
         (userText?`<div class="fbline">Deine Antwort: <span class="chip bad" style="animation:none">${esc(userText)}</span></div>`:'') +
         `<div class="fbline">Richtig wäre: <b>${esc(exp)}</b></div>`;
     }
-    SFX.bad(); anim(card,'anim-shake'); setTimeout(()=>anim(card,'anim-bad'),0);
+    SFX.bad(); anim(card,'anim-shake');
+    forceBtn.classList.remove('hidden');
   }
   showStreak(true); info();
-  $('#answer').disabled = true;
+  A().disabled = true;
   $('#nextArea').classList.remove('hidden'); $('#nextBtn').focus();
 }
 function check(){
   if(Q.answered) return;
-  const val = $('#answer').value;
-  if(!val.trim()){ $('#answer').focus(); anim($('#answer'),'anim-shake'); return; }
-  const res = Q.curDir==='la-de' ? checkDe(val, Q.cur.de, Q.typo) : checkLa(val, Q.cur.la, Q.typo);
+  const el = A(), val = el.value;
+  if(!val.trim()){ el.focus(); anim(el,'anim-shake'); return; }
+  const res = Q.kind==='text' ? checkText(val, expectedText(), Q.curDir==='de-la', Q.typo)
+            : Q.curDir==='la-de' ? checkDe(val, Q.cur.de, Q.typo) : checkLa(val, Q.cur.la, Q.typo);
   judge(res, val.trim());
 }
 $('#checkBtn').onclick = check;
 $('#skipBtn').onclick = ()=>{
   if(Q.answered) return;
+  if(Q.kind==='text') return judge(checkText('', expectedText(), Q.curDir==='de-la', false), '');
   const exp = splitDe(Q.cur.de);
-  judge(Q.curDir==='la-de' ? {kind:'de', ok:false, items:[], hits:0, wrong:0, missing:exp.length, total:exp.length} : {kind:'la', ok:false}, '');
+  judge(Q.curDir==='la-de' ? {kind:'de', ok:false, warn:false, items:[], hits:0, wrong:0, missing:exp.length, total:exp.length} : {kind:'la', ok:false}, '');
 };
-$('#answer').addEventListener('keydown', e=>{ if(e.key==='Enter'){ e.preventDefault(); Q.answered ? advance() : check(); } });
+$('#overrideBtn').onclick = ()=>{
+  if(!Q.answered || Q.state!=='bad') return;
+  const k = Q.wrong.lastIndexOf(Q.cur); if(k>=0) Q.wrong.splice(k,1);
+  Q.right++; Q.streak++; Q.forced++; Q.state = 'forced';
+  const fb = $('#feedback'); fb.className = 'feedback ok';
+  fb.innerHTML = `<div class="fbtitle">✓ Trotzdem gewertet</div><div class="fbline"><b>${esc(expectedText())}</b></div>`;
+  $('#overrideBtn').classList.add('hidden');
+  SFX.ok(); anim($('#qcard'),'anim-ok'); showStreak(true); info(); $('#nextBtn').focus();
+};
+[$('#answer'), $('#answerT')].forEach(el=>el.addEventListener('keydown', e=>{
+  if(e.key==='Enter' && !e.shiftKey){ e.preventDefault(); Q.answered ? advance() : check(); }
+}));
 function advance(){ SFX.next(); Q.i++; nextCard(); }
 $('#nextBtn').onclick = advance;
 
 // Karteikarten-Modus (Selbstbewertung)
 $('#showBtn').onclick = ()=>{
   const fb = $('#feedback'); fb.className='feedback neutral';
-  fb.innerHTML = `<div class="reveal">${esc(expectedText())}</div><span class="muted">Hast du es (vollständig) gewusst?</span>`;
+  fb.innerHTML = `<div class="reveal${Q.kind==='text'?' long':''}">${esc(expectedText())}</div><span class="muted">Hast du es (vollständig) gewusst?</span>`;
   SFX.flip();
   $('#flipArea').classList.add('hidden'); $('#rateArea').classList.remove('hidden'); $('#rightBtn').focus();
 };
@@ -562,7 +766,7 @@ document.addEventListener('keydown', e=>{
   } else if(Q.mode==='type' && Q.answered && e.key==='Enter' && tag!=='BUTTON'){ e.preventDefault(); advance(); }
 });
 
-$('#quitBtn').onclick = ()=>{ if(confirm('Abfrage beenden?')) show('setup'); };
+$('#quitBtn').onclick = ()=>{ if(confirm('Abfrage beenden?')) show(Q.kind==='text'?'tsetup':'setup'); };
 
 function finish(){
   show('result');
@@ -573,19 +777,21 @@ function finish(){
   const step = ()=>{ n++; sc.textContent = `${Math.min(n,Q.right)} / ${Q.total}`; if(n<Q.right) setTimeout(step, Math.max(25, 600/Math.max(1,Q.right))); };
   sc.textContent = `0 / ${Q.total}`; if(Q.right>0) setTimeout(step,250);
   anim(sc,'anim-bounce');
-  $('#rText').textContent = `${pct} % richtig` + (pct===100?' – perfekt! 🏛️':pct>=80?' – sehr gut!':pct>=50?' – weiter üben!':' – das wird noch.');
+  $('#rText').textContent = `${pct} % richtig${Q.partial.length?` · ${Q.partial.length} davon nicht vollständig`:''}${Q.forced?` · ${Q.forced} manuell gewertet`:''}` + (pct===100?' – perfekt! 🏛️':pct>=80?' – sehr gut!':pct>=50?' – weiter üben!':' – das wird noch.');
   const uniq = [...new Set(Q.wrong)];
   $('#rBad').innerHTML = uniq.length ? `<h2>Nochmal ansehen</h2>` + uniq.map((c,i)=>`<div class="anim-in" style="animation-delay:${i*50}ms"><b>${esc(c.la)}</b><span>${esc(c.de)}</span></div>`).join('') : '';
+  $('#rWarn').innerHTML = Q.partial.length ? `<h2 style="color:var(--warn);margin-top:18px">⚠ Nicht vollständig (zählt als richtig)</h2>` + Q.partial.map((p,i)=>`<div class="anim-in warnrow" style="animation-delay:${i*50}ms"><b>${esc(p.card.la)}</b><span>${esc(p.card.de)}</span></div>`).join('') : '';
   $('#retryBtn').classList.toggle('hidden', !uniq.length);
   SFX.fin(pct);
   if(pct>=80) setTimeout(confetti, 200);
 }
-$('#retryBtn').onclick = ()=>startQuiz([...new Set(Q.wrong)], {mode:Q.mode, dir:Q.dir, typo:Q.typo});
-$('#againBtn').onclick = ()=>$('#start').click();
-$('#backBtn').onclick = ()=>show('setup');
+$('#retryBtn').onclick = ()=>startQuiz([...new Set(Q.wrong)], {mode:Q.mode, dir:Q.dir, typo:Q.typo, kind:Q.kind});
+$('#againBtn').onclick = ()=>$(Q.kind==='text'?'#tstart':'#start').click();
+$('#backBtn').onclick = ()=>show(Q.kind==='text'?'tsetup':'setup');
 
 /* ====================== Start ====================== */
 renderTable();
+renderTTable();
 </script>
 </body>
 </html>

@@ -96,6 +96,12 @@
   .tabs button{border:none;border-bottom:3px solid transparent;border-radius:10px 10px 0 0;background:none;padding:10px 18px;font-weight:600;color:var(--muted)}
   .tabs button:hover{background:none;color:var(--ink)}
   .tabs button.on{color:var(--accent);border-bottom-color:var(--accent)}
+  .two{display:flex;gap:12px;flex-wrap:wrap}
+  .two label.opt{min-width:260px}
+  .two textarea{min-height:170px;color:var(--ink);font-size:1rem}
+  .pcell{display:flex;gap:4px;align-items:flex-start}
+  .pbtn{display:flex;flex-direction:column;gap:4px}
+  .pbtn button{padding:3px 9px;font-size:.9rem}
   .reveal{font-size:1.4rem;margin:8px 0 6px;font-family:Georgia,serif}
   .actions{display:flex;gap:10px;justify-content:center;margin-top:18px;flex-wrap:wrap}
   .score{font-size:3.2rem;font-family:Georgia,serif;margin:6px 0}
@@ -199,11 +205,42 @@
   <!-- ================= TEXTE ================= -->
   <section id="tsetup" class="hidden">
     <div class="card">
-      <h2>1 · Texte / Sätze eingeben</h2>
-      <p class="muted" style="margin-top:-6px">Lateinische Sätze oder Textstellen mit deutscher Übersetzung. In der Abfrage tippst du die Übersetzung ein. Die Wörter werden verglichen und Abweichungen markiert.</p>
+      <h2>1 · Text eingeben</h2>
+      <p class="muted" style="margin-top:-6px">Füge den ganzen lateinischen Text und die ganze deutsche Übersetzung ein. Das Programm trennt die Sätze selbst und ordnet sie der Reihe nach zu. Stellenangaben wie (3, 9–12) werden entfernt.</p>
+      <div class="two">
+        <label class="opt">Lateinischer Text
+          <textarea id="tla" placeholder="Domus ab his rebus, quibus iste delectatur, vacua est. Signum erat hoc, quod dico, Cupidinis e marmore."></textarea>
+        </label>
+        <label class="opt">Deutsche Übersetzung
+          <textarea id="tde" placeholder="Das Haus ist von solchen Dingen, auf die der da Gelüste hat, leer. Diese Statue eines Cupido, von der ich spreche, war aus Marmor."></textarea>
+        </label>
+      </div>
+      <div class="row" style="margin-top:12px">
+        <button class="primary" id="tsplit">✂ Sätze trennen</button>
+      </div>
+
+      <div id="tprev" class="hidden">
+        <h2 style="margin-top:22px">Vorschau der Sätze</h2>
+        <div class="status" id="tpstat"></div>
+        <p class="muted">Die Sätze stehen der Reihe nach nebeneinander. Stimmt etwas nicht, kannst du den Text direkt ändern, mit ⤓ einen Satz mit dem nächsten verbinden oder mit ✂ am Cursor teilen.</p>
+        <div class="tablewrap">
+          <table>
+            <thead><tr><th></th><th>Latein</th><th>Deutsch</th></tr></thead>
+            <tbody id="tpbody"></tbody>
+          </table>
+        </div>
+        <div class="row" style="margin-top:12px">
+          <button class="primary" id="tapply">✓ Übernehmen</button>
+          <button id="tcancel">Verwerfen</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <h2>2 · Gespeicherte Sätze</h2>
       <div class="tablewrap">
         <table>
-          <thead><tr><th></th><th>Lateinischer Text</th><th>Übersetzung</th><th></th></tr></thead>
+          <thead><tr><th></th><th>Lateinischer Satz</th><th>Übersetzung</th><th></th></tr></thead>
           <tbody id="ttbody"></tbody>
         </table>
       </div>
@@ -213,17 +250,11 @@
         <span style="flex:1"></span>
         <button id="texportBtn">Liste speichern (.txt)</button>
       </div>
-      <details open style="margin-top:14px">
-        <summary>Texte als Liste einfügen</summary>
-        <p class="muted">Ein Satz pro Zeile: <code>lateinischer Satz = deutsche Übersetzung</code> (oder Tab als Trenner).</p>
-        <textarea id="tpaste" style="min-height:140px" placeholder="Domus vacua est. = Das Haus ist leer.&#10;Signum erat marmoreum. = Die Statue war aus Marmor."></textarea>
-        <div class="row" style="margin-top:8px"><button id="tpasteBtn">Hinzufügen</button></div>
-        <div class="status muted" id="tstatus"></div>
-      </details>
+      <div class="status muted" id="tstatus"></div>
     </div>
 
     <div class="card">
-      <h2>2 · Abfrage starten</h2>
+      <h2>3 · Abfrage starten</h2>
       <div class="row">
         <label class="opt">Richtung
           <select id="tdir">
@@ -480,14 +511,79 @@ $('#texportBtn').onclick = ()=>{
   a.href = URL.createObjectURL(new Blob([txt],{type:'text/plain;charset=utf-8'}));
   a.download = 'latein-texte.txt'; a.click(); setTimeout(()=>URL.revokeObjectURL(a.href),2000);
 };
-$('#tpasteBtn').onclick = ()=>{
-  let added = 0;
-  for(const raw of $('#tpaste').value.split(/\r?\n/)){
-    const m = raw.trim().match(/^(.*?)(?:\t|\s*=\s*)(.+)$/);
-    if(m && m[1].trim() && m[2].trim()){ texts.push({id:uid(), la:m[1].trim(), de:m[2].trim()}); added++; }
+/* >>split */
+const ABBR = new Set(['usw','bzw','ca','nr','dr','hr','fr','vgl','ggf','evtl','etc','kap','sog','cn','sex','ti','sp','app','ser','mam','cic','verr','chr','jh','jhd','mio','mrd','st','prof','resp','inkl','bzgl','abb','anm','bes','geb','gest','hg','ders','dies','ebd','lat','griech','dt','bsp','vs','tab','zit']);
+function splitSentences(text){
+  const t = String(text||'').replace(/\r/g,'')
+    .replace(/([a-zäöüß])-[ \t]*\n[ \t]*([a-zäöüß])/g,'$1$2')   // Silbentrennung am Zeilenende
+    .replace(/\(\s*\d[\d\s,.;:—–\-f]*\)/g,' ')                  // Stellenangaben wie (3, 9—12) oder (5, 2 f.)
+    .replace(/\s+/g,' ').trim();
+  const out = []; let start = 0, m;
+  const re = /[.!?…]+["'»«“”‘’)\]]*(?=\s|$)/g;
+  while((m = re.exec(t))){
+    const end = m.index + m[0].length;
+    const next = t.slice(end).trimStart().charAt(0);
+    let split = true;
+    if(/^\.["'»«“”‘’)\]]*$/.test(m[0])){                          // einzelner Punkt: Abkürzung?
+      const w = (t.slice(start, m.index).match(/([\p{L}\d]+)$/u)||[])[1] || '';
+      if(w.length===1 || ABBR.has(w.toLowerCase()) || /^\d+$/.test(w)) split = false;
+    }
+    if(next && !/[\p{Lu}\d"'»«“”‘’„(\[]/u.test(next)) split = false; // klein weiter = gleicher Satz
+    if(split){ const x = t.slice(start,end).trim(); if(x) out.push(x); start = end; }
   }
-  if(added){ $('#tpaste').value=''; tsave(); renderTTable(); $('#tstatus').textContent = `✓ ${added} Texte hinzugefügt.`; }
-  else alert('Keine passenden Zeilen gefunden. Format: lateinischer Satz = deutsche Übersetzung');
+  const rest = t.slice(start).trim(); if(rest) out.push(rest);
+  return out;
+}
+/* <<split */
+
+let TS = {la:[], de:[]};
+function renderPreview(){
+  const n = Math.max(TS.la.length, TS.de.length);
+  const cell = (side,i)=>`<td><div class="pcell"><textarea data-side="${side}" data-i="${i}" rows="2">${esc(TS[side][i]||'')}</textarea><div class="pbtn"><button title="Am Cursor teilen" data-act="cut" data-side="${side}" data-i="${i}">✂</button><button title="Mit dem nächsten Satz verbinden" data-act="join" data-side="${side}" data-i="${i}">⤓</button></div></div></td>`;
+  let rows = '';
+  for(let i=0;i<n;i++) rows += `<tr><td class="n">${i+1}</td>${cell('la',i)}${cell('de',i)}</tr>`;
+  $('#tpbody').innerHTML = rows;
+  const a = TS.la.length, b = TS.de.length, st = $('#tpstat');
+  if(a===b){ st.style.color='var(--ok)'; st.textContent = `✓ ${a} lateinische und ${b} deutsche Sätze – passt.`; }
+  else { st.style.color='var(--warn)'; st.textContent = `⚠ ${a} lateinische ↔ ${b} deutsche Sätze: bitte angleichen, bis die Zeilen zusammenpassen.`; }
+}
+$('#tsplit').onclick = ()=>{
+  TS.la = splitSentences($('#tla').value); TS.de = splitSentences($('#tde').value);
+  if(!TS.la.length && !TS.de.length){ alert('Bitte zuerst den lateinischen Text und die Übersetzung einfügen.'); return; }
+  $('#tprev').classList.remove('hidden'); renderPreview();
+  $('#tprev').scrollIntoView({behavior:'smooth', block:'start'});
+};
+$('#tpbody').addEventListener('input', e=>{
+  const ta = e.target.closest('textarea'); if(!ta) return;
+  TS[ta.dataset.side][+ta.dataset.i] = ta.value;
+});
+$('#tpbody').addEventListener('click', e=>{
+  const btn = e.target.closest('button'); if(!btn) return;
+  const side = btn.dataset.side, i = +btn.dataset.i, arr = TS[side];
+  const ta = btn.closest('.pcell').querySelector('textarea');
+  if(btn.dataset.act==='join'){
+    if(i+1 >= arr.length) return;
+    arr.splice(i, 2, ((arr[i]||'')+' '+(arr[i+1]||'')).trim());
+  } else {
+    const txt = ta.value, pos = ta.selectionStart;
+    if(!(pos>0 && pos<txt.length)){ alert('Setze zuerst den Cursor in den Satz, dort wo geteilt werden soll.'); return; }
+    arr.splice(i, 1, txt.slice(0,pos).trim(), txt.slice(pos).trim());
+  }
+  renderPreview();
+});
+$('#tcancel').onclick = ()=>{ TS = {la:[], de:[]}; $('#tprev').classList.add('hidden'); };
+$('#tapply').onclick = ()=>{
+  const n = Math.max(TS.la.length, TS.de.length), pairs = []; let skipped = 0;
+  for(let i=0;i<n;i++){
+    const la = (TS.la[i]||'').trim(), de = (TS.de[i]||'').trim();
+    if(la && de) pairs.push({id:uid(), la, de}); else if(la || de) skipped++;
+  }
+  if(!pairs.length){ alert('Es gibt keine vollständigen Satzpaare.'); return; }
+  if(skipped && !confirm(`${skipped} Satz/Sätze haben kein Gegenstück und werden übersprungen. Trotzdem übernehmen?`)) return;
+  texts.push(...pairs); tsave(); renderTTable();
+  $('#tla').value = ''; $('#tde').value = ''; TS = {la:[], de:[]}; $('#tprev').classList.add('hidden');
+  $('#tstatus').textContent = `✓ ${pairs.length} Satzpaare hinzugefügt.` + (skipped?` (${skipped} übersprungen)`:'');
+  $('#ttbody').closest('.card').scrollIntoView({behavior:'smooth', block:'start'});
 };
 $('#tstart').onclick = ()=>{
   const valid = texts.filter(v=>v.la.trim() && v.de.trim());
@@ -656,7 +752,7 @@ $('#answerT').addEventListener('input', updateHint);
 
 function renderChips(res){
   const parts = res.items.map((it,i)=>`<span class="chip ${it.state}" style="animation-delay:${i*90}ms">${it.state==='ok'?'✓ ':it.state==='dup'?'2× ':'✗ '}${esc(it.raw)}</span>`);
-  for(let k=0;k<res.missing;k++) parts.push(`<span class="chip miss" style="animation-delay:${(res.items.length+k)*90}ms">? fehlt</span>`);
+  for(let k=0;k<(res.wrong>0?0:res.missing);k++) parts.push(`<span class="chip miss" style="animation-delay:${(res.items.length+k)*90}ms">? fehlt</span>`);
   return `<div class="chips">${parts.join('')}</div>`;
 }
 
@@ -686,14 +782,16 @@ function judge(res, userText){
     }
     SFX.warn(); anim(card,'anim-warn');
   } else {
-    Q.wrong.push(Q.cur); Q.streak = 0;
+    Q.wrong.push(Q.cur); Q.prevStreak = Q.streak; Q.streak = 0;
     fb.className = 'feedback bad';
     if(res.kind==='de'){
       let title;
       if(!userText) title = '✗ Nicht gewusst';
       else if(res.wrong>0) title = '✗ Falsch – eine falsche Bedeutung macht die ganze Antwort falsch';
       else title = '✗ Keine Bedeutung erkannt';
-      const stats = userText ? `<div class="fbline">Richtig: <b>${res.hits}</b> von ${res.total} · Falsch: <b>${res.wrong}</b> · Es ${res.missing===1?'fehlt':'fehlen'} noch: <b>${res.missing}</b></div>` : '';
+      const stats = !userText ? '' : res.wrong>0
+        ? `<div class="fbline">Richtig: <b>${res.hits}</b> von ${res.total} · Falsch: <b>${res.wrong}</b></div>`
+        : `<div class="fbline">Richtig: <b>${res.hits}</b> von ${res.total} · Es ${res.missing===1?'fehlt':'fehlen'} noch: <b>${res.missing}</b></div>`;
       fb.innerHTML = `<div class="fbtitle">${title}</div>${userText?renderChips(res):''}${stats}<div class="fbline">Vollständig richtig wäre: <b>${esc(exp)}</b></div>`;
     } else if(res.kind==='text'){
       fb.innerHTML = `<div class="fbtitle">${userText?'✗ Falsch – nur '+res.pct+' % Übereinstimmung':'✗ Nicht gewusst'}</div>${mine}<div class="fbline">Richtig wäre (gelb = fehlt bei dir):</div>${refHtml(res)}`;
@@ -727,7 +825,7 @@ $('#skipBtn').onclick = ()=>{
 $('#overrideBtn').onclick = ()=>{
   if(!Q.answered || Q.state!=='bad') return;
   const k = Q.wrong.lastIndexOf(Q.cur); if(k>=0) Q.wrong.splice(k,1);
-  Q.right++; Q.streak++; Q.forced++; Q.state = 'forced';
+  Q.right++; Q.streak = (Q.prevStreak||0) + 1; Q.forced++; Q.state = 'forced';
   const fb = $('#feedback'); fb.className = 'feedback ok';
   fb.innerHTML = `<div class="fbtitle">✓ Trotzdem gewertet</div><div class="fbline"><b>${esc(expectedText())}</b></div>`;
   $('#overrideBtn').classList.add('hidden');
